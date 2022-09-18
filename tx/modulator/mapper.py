@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from numpy import unpackbits, packbits
+import numpy as np
 
 class Mapper(ABC):
 	"""
@@ -35,15 +35,18 @@ class Mapper(ABC):
 	def make_words(self, data):
 		"""
 		Split the given data into bit-sequences (words) which 
-		can be mapped to corresponding symbols.
-		Returns words as type uint8, e.g. 0b10 -> 2
+		can be mapped to corresponding symbols. Words are returned
+		as unsigned 8-bit integers.
 		"""
+		if self.bits_per_symbol > 8:
+			raise ValueError("Mapper only supports up to 8-bit wordsize")
 		if not isinstance(data, bytearray):
 			data = bytearray(data)
-		bits = unpackbits(data)
 		bps = self.bits_per_symbol
-		words = [packbits(bits[i-bps:i])[0] for i in range(bps, len(bits)+1, bps)]
-		return words
+		bits = np.unpackbits(data)
+		bitshift = 8 - bps # np.packbits assumes the input is the first few MSB of 8-bit word. Shift to compensate.
+		words = [np.packbits(bits[i-bps:i])[0] >> bitshift for i in range(bps, len(bits)+1, bps)]
+		return np.array(words)
 
 
 	def map(self, data):
