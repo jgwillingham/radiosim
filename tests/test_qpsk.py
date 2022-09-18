@@ -1,11 +1,9 @@
-import os, sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import unittest
-import tx
+from modems import QPSKModem
 import numpy as np
 
 class QPSKTesting(unittest.TestCase):
-	mapper = tx.QPSKModulator()
+	qpsk = QPSKModem()
 	def test_make_words_range(self):
 		"""
 		TEST: 2-bit words have values in range 0-3
@@ -13,7 +11,7 @@ class QPSKTesting(unittest.TestCase):
 		2-bit words. Assert they are all in correct range.
 		"""
 		test_data = np.random.rand(100)
-		words = self.mapper.make_words(test_data)
+		words = self.qpsk.make_words(test_data)
 		self.assertTrue( np.all(words <= 3) and np.all(0 <= words) )
 
 	def test_make_words_value(self):
@@ -25,7 +23,7 @@ class QPSKTesting(unittest.TestCase):
 		"""
 		test_data = np.array([27, 228], dtype=np.uint8)
 		true_words = np.array([0, 1, 2, 3, 3, 2, 1, 0], dtype=np.uint8)
-		words = self.mapper.make_words(test_data)
+		words = self.qpsk.make_words(test_data)
 		self.assertTrue( np.all(words == true_words) )
 
 	def test_map(self):
@@ -34,7 +32,7 @@ class QPSKTesting(unittest.TestCase):
 		"""
 		test_data = np.array([27, 228], dtype=np.uint8)
 		true_symbols = np.array([-1-1j, -1+1j, 1-1j, 1+1j, 1+1j, 1-1j, -1+1j, -1-1j])
-		symbols = self.mapper.map(test_data)
+		symbols = self.qpsk.map(test_data)
 		self.assertTrue( np.all(symbols == true_symbols) )
 
 
