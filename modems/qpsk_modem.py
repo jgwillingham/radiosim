@@ -1,9 +1,9 @@
 from .modem import Modem
-from .constellations import QPSKConstellation
+from .constellations import qpsk_constellation
 
 class QPSKModem(Modem):
 	def __init__(self):
-		self._constellation = QPSKConstellation
+		self._constellation = qpsk_constellation
 	
 	@property
 	def constellation(self):
