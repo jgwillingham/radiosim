@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from .constellations import Constellation
+from .utils import PulseShaper
 import numpy as np
+from scipy import signal as dsp
 
 class Modem(ABC):
 	"""
@@ -14,6 +16,14 @@ class Modem(ABC):
 		Symbol constellation
 		"""
 		pass
+
+
+##################################################################
+# _____MAPPER_____
+# These next methods are the implementation of the mapper and
+# demapper (maps between bit sequences (words) and complex symbols
+# in the constellation)
+##################################################################
 
 
 	def make_words(self, data):
@@ -49,4 +59,29 @@ class Modem(ABC):
 		words = [self.constellation.demapper[sym] for sym in symbols]
 		data = np.array(words).flatten()
 		return bytearray(data)
-		
+
+
+##################################################################
+# _____PULSE_SHAPING_____
+# These next methods are for pulse shaping the symbols into a 
+# pulse-train to obtain the baseband waveform.
+##################################################################
+
+
+	@property
+	def pulse_shaper(self):
+		return self._pulse_shaper
+
+
+	@property
+	def pulse_shape(self):
+		return self._pulse_shape
+
+
+	@pulse_shape.setter
+	def pulse_shape(self, value):
+		if not hasattr(self, "_pulse_shaper"):
+			self._pulse_shaper = PulseShaper(value)
+		else:
+			self._pulse_shaper.shape = value
+		self._pulse_shape = shape
