@@ -1,13 +1,13 @@
 from abc import ABC, abstractmethod
+import numpy as np
 from .constellations import Constellation
 from .utils.pulse_shaping import rrc_filter, SUPPORTED_PULSE_SHAPES, DEFAULT_SPS
-import numpy as np
-from scipy import signal as dsp
+from .utils.nco import NCO
 
 class Modem(ABC):
 	"""
-	Abstract modem class. Defines a stable framework for 
-	creating symbol mappers for different modulation types 
+	Abstract base class for all modems. Defines a stable framework for 
+	all modulation and demodulation functionality.
 	"""
 	@property
 	@abstractmethod
@@ -88,3 +88,34 @@ class Modem(ABC):
 		upsampled_symbols[::self._sps] = symbols
 		bb_signal = np.convolve(upsampled_symbols, psfilter)
 		return bb_signal
+
+
+##################################################################
+# _____UP/DOWN_CONVERSION_____
+# These methods are for upconverting a baseband signal to passband
+# or conversely downconverting a passband signal to baseband
+##################################################################
+
+
+	@property
+	def center_freq(self):
+		try:
+			return self._center_freq
+		except:
+			raise ValueError("Center frequency is not set")
+
+
+	@center_freq.setter
+	def center_freq(self, value):
+		if hasattr(self, "_nco"):
+			self._nco.frequency = value
+		else:
+			self._nco = NCO(f=f)
+
+
+	def upconvert(self, bb_signal):
+		nsamples = len(bb_signal)
+		pb_signal = bb_signal * self._nco.get_samples(nsamples)
+		return pb_signal
+
+

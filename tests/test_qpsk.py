@@ -6,11 +6,11 @@ class QPSKTesting(unittest.TestCase):
 	qpsk = QPSKModem()
 	def test_make_words_range(self):
 		"""
-		--\t\t2-bit words have values in range 0-3
+		--\t\tRandom 2-bit words have values in range 0-3
 		Generate random array of 100 floats and create
 		2-bit words. Assert they are all in correct range.
 		"""
-		test_data = np.random.rand(100)
+		test_data = np.random.rand(100).astype(float)
 		words = self.qpsk.make_words(test_data)
 		self.assertTrue( np.all(words <= 3) and np.all(0 <= words) )
 
@@ -37,9 +37,9 @@ class QPSKTesting(unittest.TestCase):
 
 	def test_demap(self):
 		"""
-		--\t\tInput data is mapped and then demapped to recover the original data
+		--\t\tRandom input data is mapped and then demapped to recover the original data
 		"""
-		test_data = np.array([27, 228], dtype=np.uint8)
+		test_data = np.random.rand(100).astype(np.uint8)
 		words = self.qpsk.make_words(test_data)
 		symbols = self.qpsk.map(test_data)
 		demapped_bytes = self.qpsk.demap(symbols)
