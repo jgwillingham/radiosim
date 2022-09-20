@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from .constellations import Constellation
-from .utils import PulseShaper
+from .utils.pulse_shaping import rrc_filter, SUPPORTED_PULSE_SHAPES
 import numpy as np
 from scipy import signal as dsp
 
@@ -40,7 +40,7 @@ class Modem(ABC):
 		bits = np.unpackbits(data)
 		bitshift = 8 - bps # np.packbits assumes the input is the first few MSB of 8-bit word. Shift to compensate.
 		words = [np.packbits(bits[i-bps:i])[0] >> bitshift for i in range(bps, len(bits)+1, bps)]
-		return np.array(words)
+		return np.array(words, dtype=np.uint8)
 
 
 	def map(self, data):
@@ -57,8 +57,7 @@ class Modem(ABC):
 		Demap the given symbols to the corresponding byte sequence
 		"""
 		words = [self.constellation.demapper[sym] for sym in symbols]
-		data = np.array(words).flatten()
-		return bytearray(data)
+		return bytearray(words)
 
 
 ##################################################################
@@ -68,20 +67,8 @@ class Modem(ABC):
 ##################################################################
 
 
-	@property
-	def pulse_shaper(self):
-		return self._pulse_shaper
+	def get_pulse_filter(self, **params):
+		return rrc_filter(**params)
 
-
-	@property
-	def pulse_shape(self):
-		return self._pulse_shape
-
-
-	@pulse_shape.setter
-	def pulse_shape(self, value):
-		if not hasattr(self, "_pulse_shaper"):
-			self._pulse_shaper = PulseShaper(value)
-		else:
-			self._pulse_shaper.shape = value
-		self._pulse_shape = shape
+	def apply_pulse_shape(self, symbols, psfilter):
+		return np.convolve(symbols, psfilter)
