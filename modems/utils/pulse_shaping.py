@@ -2,8 +2,10 @@ import numpy as np
 import sys
 
 
+DEFAULT_SPS = 4
+
 	
-def rrc_filter(sps=4, num_positive_lobes=4, alpha=0.33):
+def rrc_filter(sps=DEFAULT_SPS, num_positive_lobes=4, alpha=0.33):
     """
     Root raised cosine (RRC) filter (FIR) impulse response.
 

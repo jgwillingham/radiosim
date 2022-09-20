@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from .constellations import Constellation
-from .utils.pulse_shaping import rrc_filter, SUPPORTED_PULSE_SHAPES
+from .utils.pulse_shaping import rrc_filter, SUPPORTED_PULSE_SHAPES, DEFAULT_SPS
 import numpy as np
 from scipy import signal as dsp
 
@@ -49,7 +49,7 @@ class Modem(ABC):
 		"""
 		words = self.make_words(data)
 		symbols = [self.constellation.mapper[word] for word in words]
-		return np.array(symbols)
+		return np.array(symbols, dtype=np.complex64)
 
 
 	def demap(self, symbols):
@@ -68,7 +68,23 @@ class Modem(ABC):
 
 
 	def get_pulse_filter(self, **params):
+		"""
+		Returns the filter coefficients used in the pulse shaping filter.
+		"""
+		if "sps" in params.keys():
+			self._sps = params["sps"]
+		else:
+			self._sps = DEFAULT_SPS
 		return rrc_filter(**params)
 
-	def apply_pulse_shape(self, symbols, psfilter):
-		return np.convolve(symbols, psfilter)
+
+	def apply_pulse_filter(self, symbols, psfilter):
+		"""
+		Applies the FIR pulse shaping filter to the provided symbols.
+		In the process, the symbols are upsampled by the number of
+		samples per symbol.
+		"""
+		upsampled_symbols = np.zeros(len(symbols)*self._sps, dtype=np.complex64)
+		upsampled_symbols[::self._sps] = symbols
+		bb_signal = np.convolve(upsampled_symbols, psfilter)
+		return bb_signal
