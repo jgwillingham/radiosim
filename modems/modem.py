@@ -102,7 +102,7 @@ class Modem(ABC):
 		try:
 			return self._center_freq
 		except:
-			raise ValueError("Center frequency is not set")
+			raise AttributeError("Center frequency is not set")
 
 
 	@center_freq.setter
@@ -110,7 +110,7 @@ class Modem(ABC):
 		if hasattr(self, "_nco"):
 			self._nco.frequency = value
 		else:
-			self._nco = NCO(f=f)
+			self._nco = NCO(f=value)
 
 
 	def upconvert(self, bb_signal):
