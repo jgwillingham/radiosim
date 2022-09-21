@@ -13,4 +13,4 @@ In RadioSim, the transmitter, receiver, and channel are all simulated as indepen
 ### Tests
 To run tests, from the root directory, run
 
-`python3 -m tests.test_qpsk`
+`python3 -m unittest discover`
