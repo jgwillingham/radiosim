@@ -18,3 +18,4 @@ class Packetizer(threading.Thread):
 			# attach header here
 			packet = data #tmp
 			self.outbuffer.put(packet)
+			self.inbuffer.task_done()
