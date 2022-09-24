@@ -1,8 +1,11 @@
 import threading
+import logging
+log = logging.getLogger(__name__)
 
 
 class Packetizer(threading.Thread):
 	def __init__(self, modem, state, inbuffer, outbuffer):
+		super().__init__()
 		self.modem = modem
 		self.tx_state = state
 		self.inbuffer = inbuffer
@@ -10,6 +13,7 @@ class Packetizer(threading.Thread):
 
 
 	def run(self):
+		log.debug("Packetizer thread begin executing")
 		while True:
 			if self.tx_state != "TRANSMIT" and self.inbuffer.empty():
 				break

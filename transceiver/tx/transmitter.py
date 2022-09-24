@@ -37,7 +37,7 @@ class Transmitter(FSM):
 		self.buf_front = queue.Queue( maxsize=self.buffer_size )
 		self.buf_mid   = queue.Queue( maxsize=self.buffer_size )
 		self.buf_back  = queue.Queue( maxsize=self.buffer_size )
-		log.debug(f"Buffers initialized with maxlen={self.buffer_size}")
+		log.info(f"Buffers initialized with maxlen={self.buffer_size}")
 
 
 	def initialize_sockets(self, iport, oport):
@@ -47,6 +47,7 @@ class Transmitter(FSM):
 		self.zmq_context = zmq.Context()
 
 		self.listen_socket = self.zmq_context.socket( zmq.PULL )
+		#self.listen_socket.setsockopt(zmq.RCVTIMEO, 5000)
 		pull_addr = f"{tcp_lo}:{self.iport}"
 		self.listen_socket.bind( pull_addr )
 		log.info(f"Listen socket = {pull_addr}")
@@ -70,30 +71,31 @@ class Transmitter(FSM):
 
 	@FSM.transition(OFFLINE, READY)
 	def start(self):
-		log.debug("Starting daemon listening thread")
+		log.info("Starting daemon listening thread")
 		self._listen_thread = threading.Thread( target=self._listen_for_input )
-		#self._listen_thread.daemon = True
+		self._listen_thread.daemon = True
 		self._listen_thread.start()
 
 
 	def _listen_for_input(self):
-		log.debug("Listening for input")
+		log.info("Listening for input")
 		while self.current_state != self.OFFLINE:
 			# listen on input socket for data to store in the front buffer
 			data = self.listen_socket.recv()
 			self.buf_front.put(data)
 			if self.current_state == self.READY and not self.buf_front.empty():
 				self.start_transmitting()
+				log.info("Data found in front buffer. Starting transmission.")
 
 
 	@FSM.transition(READY, TRANSMIT)
 	def start_transmitting(self):
-		log.debug("Starting modulator")
+		log.info("Starting modulator")
 		self.modulator = Modulator(self.modem, self.current_state, \
 						 self.buf_mid, self.buf_back)
 		self.modulator.start()
 
-		log.debug("Starting packetizer")
+		log.info("Starting packetizer")
 		self.packetizer = Packetizer(self.modem, self.current_state, \
 						 self.buf_front, self.buf_mid)
 		self.packetizer.start()
@@ -107,12 +109,14 @@ class Transmitter(FSM):
 
 
 	def _send_output(self):
-		log.debug(f"Sending output to destination port {self.oport}")
+		log.info(f"Sending output to destination port {self.oport}")
 		while True:
-			if self.state != self.TRANSMIT and self.back_buffer.empty(): break
-			waveform_data = self.back_buffer.get()
+			if self.current_state != self.TRANSMIT and self.buf_back.empty(): break
+			waveform_data =  self.buf_back.get() 
+			log.debug(f"Sending {len(waveform_data)} samples")
 			self.transmit_socket.send( waveform_data )
-			self.back_buffer.task_done()
+			self.buf_back.task_done()
+		log.info("Stopping sending output")
 
 
 ######################################################
@@ -132,22 +136,22 @@ class Transmitter(FSM):
 
 	@FSM.transition(TRANSMIT, OFFLINE)
 	def stop_transmitting(self):
-		log.debug("Stopping transmission. Clearing buffers.")
+		log.info("Stopping transmission. Clearing buffers.")
 		self.stop_listening()
-		self.packetizer.join()   # clear front buffer + stop packetizer
-		self.modulator.join()    # clear middle buffer + stop modulator
-		self._send_thread.join() # clear back buffer + stop output
+		self.packetizer.join(2)   # clear front buffer + stop packetizer
+		self.modulator.join(2)    # clear middle buffer + stop modulator
+		self._send_thread.join(2) # clear back buffer + stop output
 		if not self.check_for_clear_buffers():
 			log.warning("Failed to clear buffers")
 		else:
-			log.debug("Buffers cleared")
+			log.info("Buffers cleared")
 
 
-	@FSM.transition(READY, OFFLINE)
+	#@FSM.transition(READY, OFFLINE)
 	def stop_listening(self):
-		log.debug("Going offline")
+		log.info("Going offline")
 		# shutdown socket here
-		self._listen_thread.join()
+		self._listen_thread.join(2)
 
 
 	def check_for_clear_buffers(self):

@@ -1,16 +1,18 @@
 import threading
+import logging
+log = logging.getLogger(__name__)
 
 class Modulator(threading.Thread):
-	def __init__(self, modem, state, inbuffer, outbuffer, **psparams):
+	def __init__(self, modem, state, inbuffer, outbuffer):
 		super().__init__()
 		self.modem = modem
 		self.tx_state = state
 		self.inbuffer = inbuffer
 		self.outbuffer = outbuffer
-		self.pulse_filter = modem.get_pulse_filter(**psparams)
 
 
 	def run(self):
+		log.debug("Modulator thread begin executing")
 		while True:
 			if self.tx_state != "TRANSMIT" and self.inbuffer.empty():
 				break
@@ -19,7 +21,7 @@ class Modulator(threading.Thread):
 			# map to complex symbols
 			symbols = self.modem.map(data)
 			# pulse shape
-			bb_signal = self.modem.apply_pulse_filter(symbols, self.pulse_filter)
+			bb_signal = self.modem.apply_pulse_filter(symbols, self.modem.pulse_shape_filter)
 			# upconvert
 			pb_signal = self.modem.upconvert(bb_signal)
 			# put in output buffer
