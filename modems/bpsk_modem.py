@@ -10,6 +10,11 @@ class BPSKModem(Modem):
 				"alpha":0.33}
 		self.pulse_shape_filter = self.get_pulse_filter(**self.psparams)	
 
+
+	def __repr__(self):
+		return f"BPSKModem(sps={self._sps})"
+
+
 	@property
 	def constellation(self):
 		return self._constellation

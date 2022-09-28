@@ -12,8 +12,12 @@ class DataSource(threading.Thread):
 		self.initialize_socket( oport )
 
 
+	def __repr__(self):
+		return f"DataSource(data=self.data.__repr__(), oport={self.oport}, chunksize={self.chunksize})"
+
+
 	def initialize_socket(self, oport):
-		self.target_port = oport
+		self.oport = oport
 		self.zmq_context = zmq.Context()
 		self.output_socket = self.zmq_context.socket( zmq.PUSH )
 		self.output_socket.connect( f"tcp://127.0.0.1:{oport}" )

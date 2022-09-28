@@ -59,7 +59,7 @@ class FSM(ABC):
 	def initialize(self, initial_state):
 		if initial_state in self._states:
 			self._state = initial_state
-			log.info(f"Initialized FSM in state {self._state}")
+			log.info(f"Initialized FSM {self.__str__()} in state {self._state}")
 		else:
 			raise StateError(f"{initial_state} is not a valid state.")
 
@@ -73,7 +73,7 @@ class FSM(ABC):
 					state1 in _self._states and \
 					state2 in _self._states
 				if isvalid:
-					log.info(f"Trigger transition: {state1} --> {state2}")
+					log.info(f"Trigger transition in {_self.__str__()}: {state1} --> {state2}")
 					_self._state = state2
 					func(*args, **kwargs)
 				else:

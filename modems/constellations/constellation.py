@@ -8,6 +8,10 @@ class Constellation:
 		self.mapper = symbol_map
 
 
+	def __repr__(self):
+		return f"Constellation(symbol_map={self.mapper})"
+
+
 	@property
 	def mapper(self) -> dict:
 		"""

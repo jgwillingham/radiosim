@@ -9,6 +9,10 @@ class NCO:
 		self._phase = phase
 
 
+	def __repr__(self):
+		return f"NCO(f={self._frequency}, phase={self._phase})"
+
+
 	@property
 	def frequency(self):
 		"""

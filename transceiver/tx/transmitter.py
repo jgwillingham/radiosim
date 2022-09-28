@@ -16,14 +16,33 @@ class Transmitter(FSM):
 	READY = "READY"
 	TRANSMIT = "TRANSMIT"
 	states = [OFFLINE, READY, TRANSMIT]
-	
+
+	object_counter = 0
+
 
 	def __init__(self, modem, buffer_size=1024, iport=11111, oport=22222):
+		Transmitter.object_counter += 1
+		self._obj_idx = Transmitter.object_counter
+
 		self.modem = modem
 		self.register_states( self.states )
 		self.initialize( self.OFFLINE )
 		self.initialize_buffers( buffer_size )
 		self.initialize_sockets( iport, oport )
+
+
+	def __repr__(self):
+		return f"Transmitter(modem={self.modem.__repr__()}, buffer_size={self.buffer_size}, iport={self.iport}, oport={self.oport})"
+
+
+	def __str__(self):
+		return f"Tx{self._obj_idx}"
+
+
+	@property
+	def object_idx(self):
+		return self._obj_idx
+		
 
 ######################################################
 # _____Initialization_____

@@ -59,8 +59,8 @@ if __name__=="__main__":
 
 	tx = get_tx(sps=sps)
 	tx.start()
-	print("")
 	time.sleep(1)
+	print("")
 	start_data_source(nchunks)
 
 	iq = receive()
