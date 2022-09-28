@@ -21,13 +21,13 @@ class DataSource(threading.Thread):
 
 	def run(self):
 		log.info("Starting data source thread")
-		n = 0
 		chunk = self.chunksize
+		curr_idx = 0
 		finished = False
 		while not finished:
-			if n + self.chunksize > len(self.serial_data):
-				chunk = len(self.serial_data) - n
+			if curr_idx + self.chunksize > len(self.serial_data):
+				chunk = len(self.serial_data) - curr_idx + 1
 				finished = True
-			data_chunk = self.serial_data[n:n+chunk]
+			data_chunk = self.serial_data[curr_idx:curr_idx + chunk]
 			self.output_socket.send( data_chunk )
-			n += 1
+			curr_idx += chunk
