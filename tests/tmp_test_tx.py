@@ -10,10 +10,10 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def get_tx(sps):
+def get_tx(sps, **params):
 	qpsk = QPSKModem(sps=sps)
 	qpsk.center_freq = 0
-	tx = Transmitter(qpsk)
+	tx = Transmitter(qpsk, **params)
 	return tx
 
 
@@ -32,30 +32,32 @@ def receive():
 		rawdata = rx_socket.recv()
 		nbytes = len(rawdata)
 		nsamples = nbytes // 16 # assuming complex doubles
-		log.info( f"Received {nbytes} bytes = {nsamples} complex samples" )
+		log.debug( f"Received {nbytes} bytes = {nsamples} complex samples" )
 		data = struct.unpack("dd"*nsamples, rawdata)
 		data = np.array(data)
 		iq = np.append(iq, data[::2] + 1j*data[1::2] )
+	log.info( f"Received {len(iq)} complex samples" )
 	return iq
 
 
 def parse_args():
 	parser = argparse.ArgumentParser()
-	parser.add_argument("-c", "--chunksize", type=int, default=5)
+	parser.add_argument("-n", "--nchunks", type=int, default=5)
 	parser.add_argument("-s", "--sps", type=int, default=4)
 	parser.add_argument("-p", "--print-data", action='store_true', default=False)
+	parser.add_argument("-l", "--log", type=str, default="info")
 	args = parser.parse_args()
 	return args
 
 
 if __name__=="__main__":
 	args = parse_args()
-	nchunks = args.chunksize
+	nchunks = args.nchunks
 	sps = args.sps
 	print_data = args.print_data
+	loglevel = getattr(logging, args.log.upper(), None)
 	
-	
-	logging.basicConfig(level=logging.DEBUG, format="{levelname}: [{threadName} | {name}] <> {message}", style="{")
+	logging.basicConfig(level=loglevel, format="{levelname} | {threadName} | {module} :: {message}", style="{")
 
 	tx = get_tx(sps=sps)
 	tx.start()
