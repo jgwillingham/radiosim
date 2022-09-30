@@ -1,5 +1,5 @@
 import unittest
-from modems import QPSKModem
+from radiosim.modems import QPSKModem
 import numpy as np
 
 class QPSKTesting(unittest.TestCase):
@@ -10,7 +10,8 @@ class QPSKTesting(unittest.TestCase):
 		Generate random array of 100 floats and create
 		2-bit words. Assert they are all in correct range.
 		"""
-		test_data = np.random.rand(100).astype(float)
+		test_data = np.random.rand(100)*100
+		test_data = test_data.astype(float)
 		words = self.qpsk.make_words(test_data)
 		self.assertTrue( np.all(words <= 3) and np.all(0 <= words) )
 
@@ -39,7 +40,8 @@ class QPSKTesting(unittest.TestCase):
 		"""
 		--\t\tRandom input data is mapped and then demapped to recover the original data
 		"""
-		test_data = np.random.rand(100).astype(np.uint8)
+		test_data = np.random.rand(100)*100
+		test_data = test_data.astype(np.uint8)
 		words = self.qpsk.make_words(test_data)
 		symbols = self.qpsk.map(test_data)
 		demapped_bytes = self.qpsk.demap(symbols)

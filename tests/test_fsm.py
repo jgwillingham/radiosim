@@ -1,5 +1,5 @@
 import unittest
-from tools.fsm import FSM, StateError
+from radiosim.tools.fsm import FSM, StateError
 
 
 class StateMachine(FSM):
