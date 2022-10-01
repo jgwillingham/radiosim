@@ -1,6 +1,7 @@
 import unittest
 from radiosim.modems import QPSKModem
 import numpy as np
+import struct
 
 class QPSKTesting(unittest.TestCase):
 	qpsk = QPSKModem()
@@ -40,12 +41,12 @@ class QPSKTesting(unittest.TestCase):
 		"""
 		--\t\tRandom input data is mapped and then demapped to recover the original data
 		"""
-		test_data = np.random.rand(100)*100
-		test_data = test_data.astype(np.uint8)
-		words = self.qpsk.make_words(test_data)
+		npoints = 100
+		test_data = np.random.rand(npoints)*100 # dtype=float64
 		symbols = self.qpsk.map(test_data)
 		demapped_bytes = self.qpsk.demap(symbols)
-		self.assertTrue( np.all(demapped_bytes == words) )
+		rx_data = struct.unpack("d"*npoints, demapped_bytes)
+		self.assertTrue( np.all(rx_data == test_data) )
 
 if __name__ == "__main__":
 	unittest.main()

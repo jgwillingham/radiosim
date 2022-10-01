@@ -52,12 +52,20 @@ class Modem(ABC):
 		return np.array(symbols, dtype=np.complex64)
 
 
-	def demap(self, symbols):
+	def demap(self, symbols) -> bytes:
 		"""
 		Demap the given symbols to the corresponding byte sequence
 		"""
-		words = [self.constellation.demapper[sym] for sym in symbols]
-		return bytearray(words)
+		spb = 8//self.constellation.bits_per_symbol # symbols per byte
+		if len(symbols) % spb != 0:
+			raise ValueError("For bytewise demapping, the input symbols must correspond" + \
+					" to an integer number of bytes")
+		byte_symbol_seqs = [tuple(symbols[i:i+spb]) for i in range(0, len(symbols), spb)]
+		raw_byte_list = [self.constellation.bytewise_demapper[seq] for seq in byte_symbol_seqs]
+		rawdata = b''
+		for byt in raw_byte_list: 
+			rawdata += byt
+		return rawdata
 
 
 ##################################################################
@@ -86,7 +94,7 @@ class Modem(ABC):
 		"""
 		upsampled_symbols = np.zeros(len(symbols)*self._sps, dtype=np.complex64)
 		upsampled_symbols[::self._sps] = symbols
-		bb_signal = np.convolve(upsampled_symbols, psfilter)
+		bb_signal = np.convolve(upsampled_symbols, psfilter, 'same')
 		return bb_signal
 
 
