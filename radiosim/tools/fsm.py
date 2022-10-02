@@ -59,7 +59,7 @@ class FSM(ABC):
 	def initialize(self, initial_state):
 		if initial_state in self._states:
 			self._state = initial_state
-			log.info(f"Initialized FSM {self.__str__()} in state {self._state}")
+			log.info(f"{self.__str__()} - Initialized in state {self._state}")
 		else:
 			raise StateError(f"{initial_state} is not a valid state.")
 
