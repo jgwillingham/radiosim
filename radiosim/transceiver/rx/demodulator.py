@@ -1,4 +1,5 @@
 import threading
+import queue
 import struct
 import numpy as np
 import logging
@@ -6,20 +7,39 @@ log = logging.getLogger(__name__)
 
 
 class Demodulator(threading.Thread):
-	def __init__(self, modem, rx_state_query, inbuffer, outbuffer, timeout):
+
+	object_counter = 0
+
+	def __init__(self, modem, state_query, inbuffer, outbuffer, timeout):
 		super().__init__()
+		self._obj_idx = Demodulator.object_counter
+		Demodulator.object_counter += 1
 		self.modem = modem
-		self.rx_state_query = rx_state_query
+		self.rx_state_query = state_query
 		self.inbuffer = inbuffer
 		self.outbuffer = outbuffer
 		self.timeout = timeout
 
 
+	def __repr__(self):
+		return f"Demodulator(modem={self.modem.__repr__()}, state_query={self.rx_state_query.__repr__()}, \
+			inbuffer={self.inbuffer.__repr__()}, outbuffer={self.outbuffer.__repr__()}, timeout={self.timeout})"
+
+
+	def __str__(self):
+		return f"Rx{self._obj_idx}"
+
+
 	def run(self):
-		log.debug("Demodulator thread begin executing")
-		while self.rx_state_query() != "OFFLINE":
+		log.debug(f" {self.__str__()} - Demodulator thread begin executing")
+		while True:
+			if self.rx_state_query() != "DEMOD" and self.inbuffer.empty(): break
 			# get data from buffer
-			pbdata_bytes = self.inbuffer.get( self.timeout/1e3 )
+			try:
+				pbdata_bytes = self.inbuffer.get( timeout=self.timeout/1e3 )
+			except queue.Empty:
+				continue
+			# unpack the complex64 data
 			num_complex64s = len(pbdata_bytes)//8
 			pb_interleaved = np.array(struct.unpack("ff"*num_complex64s, pbdata_bytes), dtype=np.complex64)
 			pbdata = pb_interleaved[::2] + 1j*pb_interleaved[1::2]
@@ -38,4 +58,4 @@ class Demodulator(threading.Thread):
 			self.outbuffer.put(databytes)
 			# mark task as done
 			self.inbuffer.task_done()
-		log.debug("Terminating demodulation loop")
+		log.debug(f" {self.__str__()} - Terminating demodulator")

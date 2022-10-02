@@ -19,7 +19,7 @@ class Modulator(threading.Thread):
 
 
 	def __repr__(self):
-		return f"Modulator(modem={self.modem.__repr__()}, state_query={self.state_query.__repr__()}, \
+		return f"Modulator(modem={self.modem.__repr__()}, state_query={self.tx_state_query.__repr__()}, \
 			inbuffer={self.inbuffer.__repr__()}, outbuffer={self.outbuffer.__repr__()}, timeout={self.timeout})"
 
 
@@ -47,4 +47,4 @@ class Modulator(threading.Thread):
 			self.outbuffer.put(pb_signal)
 			# make task as done
 			self.inbuffer.task_done()
-		log.debug(f" {self.__str__()} - Terminating modulator thread")
+		log.debug(f" {self.__str__()} - Terminating modulator")

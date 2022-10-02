@@ -1,4 +1,4 @@
-from tools.fsm import FSM
+from radiosim.tools.fsm import FSM
 from .demodulator import Demodulator
 import queue
 import threading
