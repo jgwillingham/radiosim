@@ -53,7 +53,7 @@ class Receiver(FSM):
 		self.buffer_size = buffer_size
 		self.buf_front = queue.Queue( maxsize=self.buffer_size )
 		self.buf_back  = queue.Queue( maxsize=self.buffer_size )
-		log.info(self.loghdr + f"Buffers initialized with maxsize={self.buffer_size}")
+		log.debug(self.loghdr + f"Buffers initialized with maxsize={self.buffer_size}")
 
 
 	def initialize_sockets(self, iport):
@@ -79,22 +79,22 @@ class Receiver(FSM):
 
 	@FSM.transition(OFFLINE, SEARCH)
 	def start(self):
-		log.info(self.loghdr + "Starting daemon receiving thread")
+		log.debug(self.loghdr + "Starting daemon receiving thread")
 		self._recv_thread = threading.Thread( target=self._recv )
 		self._recv_thread.daemon = True
 		self._recv_thread.start()
 
 
 	def _recv(self):
-		log.info(self.loghdr + "Recv thread executing")
+		log.info(self.loghdr + "Listening for input")
 		while self.current_state != self.OFFLINE:
 			if self.recv_socket.poll( self.timeout, zmq.POLLIN ):
 				data = self.recv_socket.recv()
 				self.buf_front.put(data)
 			if self.current_state == self.SEARCH and not self.buf_front.empty():
-				log.info(self.loghdr + "Data found in front buffer. Starting demodulation.")
+				log.debug(self.loghdr + "Data found in front buffer. Starting demodulation.")
 				self.start_demodulation()
-		log.debug(self.loghdr + "Terminating receive loop")
+		log.debug(self.loghdr + "Terminating _recv_thread")
 
 
 
@@ -127,11 +127,11 @@ class Receiver(FSM):
 		if not self.check_for_clear_buffers():
 			log.warning(self.loghdr + "Failed to clear buffers")
 		else:
-			log.info(self.loghdr + "Buffers cleared")
+			log.debug(self.loghdr + "Buffers cleared")
 
 
 	def stop_listening(self):
-		log.info(self.loghdr + "Going offline")
+		log.debug(self.loghdr + "Going offline")
 		self._recv_thread.join(2) 
 
 

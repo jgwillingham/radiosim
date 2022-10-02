@@ -65,7 +65,7 @@ iport={self.iport}, oport={self.oport}, timeout={self.timeout})"
 		self.buf_front = queue.Queue( maxsize=self.buffer_size )
 		self.buf_mid   = queue.Queue( maxsize=self.buffer_size )
 		self.buf_back  = queue.Queue( maxsize=self.buffer_size )
-		log.info(self.loghdr + f"Buffers initialized with maxsize={self.buffer_size}")
+		log.debug(self.loghdr + f"Buffers initialized with maxsize={self.buffer_size}")
 
 
 	def initialize_sockets(self, iport, oport):
@@ -113,16 +113,17 @@ iport={self.iport}, oport={self.oport}, timeout={self.timeout})"
 				self.buf_front.put(data)
 			if self.current_state == self.READY and not self.buf_front.empty():
 				self.start_transmitting()
-				log.info(self.loghdr + "Data found in front buffer. Starting transmission.")
+				log.debug(self.loghdr + "Data found in front buffer. Starting transmission.")
 		log.debug(self.loghdr + "Terminating _listen_thread")
 
 
 	@FSM.transition(READY, TRANSMIT)
 	def start_transmitting(self):
-		log.info(self.loghdr + "Starting modulator")
+		log.info(self.loghdr + "Starting transmission")
+		log.debug(self.loghdr + "Starting modulator")
 		self.modulator.start()
 
-		log.info(self.loghdr + "Starting packetizer")
+		log.debug(self.loghdr + "Starting packetizer")
 		self.packetizer.start()
 
 		self.start_sending_output()
@@ -134,14 +135,13 @@ iport={self.iport}, oport={self.oport}, timeout={self.timeout})"
 
 
 	def _send_output(self):
-		log.info(self.loghdr + f"Sending output to destination port {self.oport}")
+		log.debug(self.loghdr + f"Sending output to destination port {self.oport}")
 		while True:
 			if self.current_state != self.TRANSMIT and self.buf_back.empty(): break
 			try:
 				waveform_data =  self.buf_back.get( timeout=self.timeout/1e3 ) 
 			except queue.Empty:
 				continue
-			log.debug(self.loghdr + f"Transmitting {len(waveform_data)} complex passband samples")
 			self.transmit_socket.send( waveform_data )
 			self.buf_back.task_done()
 		log.debug(self.loghdr + "Terminating _send_thread")
@@ -172,12 +172,12 @@ iport={self.iport}, oport={self.oport}, timeout={self.timeout})"
 		if not self.check_for_clear_buffers():
 			log.warning(self.loghdr + "Failed to clear buffers")
 		else:
-			log.info(self.loghdr + "Buffers cleared")
+			log.debug(self.loghdr + "Buffers cleared")
 
 
 	#@FSM.transition(READY, OFFLINE)
 	def stop_listening(self):
-		log.info(self.loghdr + "Going offline")
+		log.debug(self.loghdr + "Going offline")
 		self._listen_thread.join(2) 
 
 

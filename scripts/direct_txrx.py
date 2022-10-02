@@ -1,7 +1,6 @@
-from transceiver import Transmitter
-from transceiver import Receiver
-from data_source_sink import DataSource
-from modems import BPSKModem, QPSKModem 
+from radiosim.transceiver import Transmitter, Receiver
+from radiosim.data_source_sink import DataSource
+from radiosim.modems import BPSKModem, QPSKModem 
 import argparse
 import time
 import numpy as np
@@ -12,32 +11,32 @@ log = logging.getLogger(__name__)
 
 from matplotlib import pyplot as plt
 
-def get_tx(sps, **params):
+def get_tx(sps, center_freq, **params):
 	qpsk = QPSKModem(sps=sps)
-	qpsk.center_freq = 0
+	qpsk.center_freq = center_freq
 	tx = Transmitter(qpsk, **params)
 	return tx
 
 
-def get_rx(sps, **params):
+def get_rx(sps, center_freq, **params):
 	qpsk = QPSKModem(sps=sps)
-	qpsk.center_freq = 0
+	qpsk.center_freq = center_freq
 	rx = Receiver(qpsk, **params)
 	return rx
 
 
-def watch_back_buffer(rx, dtype):
+def watch_back_buffer(rx, dtype, dlen):
 	rx_bytes = []
 	nbytes = 0
-	while True:
+	while nbytes < dlen:
 		try:
 			rawdata = rx.buf_back.get( timeout=1 )
 		except queue.Empty:
-			log.warning("Receiver timeout")
-			break
+			continue
 		log.debug(f"Received {len(rawdata)} bytes")
 		nbytes += len(rawdata)
 		rx_bytes.append(rawdata)
+	log.info(f"Received all {dlen} bytes of data")
 	databytes = b''
 	for byts in rx_bytes: databytes += byts
 	if dtype == np.uint8:
@@ -61,6 +60,7 @@ def parse_args():
 	parser.add_argument("-s", "--sps", type=int, default=8)
 	parser.add_argument("-l", "--log", type=str, default="info")
 	parser.add_argument("-d", "--dtype", type=str, default="uint8", choices=SUPPORTED_DTYPES)
+	parser.add_argument("-f", "--freq", type=float, default=10e3)
 	args = parser.parse_args()
 	return args
 
@@ -69,17 +69,18 @@ if __name__=="__main__":
 	nchunks = args.nchunks
 	sps = args.sps
 	datatype = eval(f"np.{args.dtype.lower()}")
+	freq = args.freq
 	loglevel = getattr(logging, args.log.upper(), None)	
 	logging.basicConfig(level=loglevel, format="{levelname} | {threadName} | {module} :: {message}", style="{")
 
 	# Start Receiver
-	rx = get_rx(sps=sps, iport=22222)
+	rx = get_rx(sps=sps, center_freq=freq, iport=22222)
 	rx.start()
 
 	time.sleep(1)
 
 	# Start Transmitter
-	tx = get_tx(sps=sps, iport=11111, oport=22222)
+	tx = get_tx(sps=sps, center_freq=freq, iport=11111, oport=22222)
 	tx.start()
 
 	time.sleep(1)
@@ -87,11 +88,13 @@ if __name__=="__main__":
 
 	# Start sourcing random data to TX
 	data = (100*np.random.rand(512*nchunks-1)).astype(datatype)
+	dlen = len(bytearray(data))
 	src = DataSource(data, oport=11111)
+	log.info(f"Preparing to send {dlen} bytes of data")
 	src.start()
 
 	# Watch RX back buffer for the demodulated data
-	rx_data = watch_back_buffer(rx, datatype)
+	rx_data = watch_back_buffer(rx, datatype, dlen)
 
 
 	# stop TX and RX
