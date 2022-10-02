@@ -73,7 +73,7 @@ class FSM(ABC):
 					state1 in _self._states and \
 					state2 in _self._states
 				if isvalid:
-					log.info(f"Trigger transition in {_self.__str__()}: {state1} --> {state2}")
+					log.info(f"{_self.__str__()} - Trigger transition: {state1} --> {state2}")
 					_self._state = state2
 					func(*args, **kwargs)
 				else:

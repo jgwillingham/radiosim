@@ -10,6 +10,7 @@ class DataSource(threading.Thread):
 		self.serial_data = data
 		self.chunksize = chunksize
 		self.initialize_socket( oport )
+		self.daemon = True
 
 
 	def __repr__(self):
@@ -34,4 +35,5 @@ class DataSource(threading.Thread):
 				finished = True
 			data_chunk = self.serial_data[curr_idx:curr_idx + chunk]
 			self.output_socket.send( data_chunk )
+			log.debug(f"Sourcing {len(data_chunk)} bytes for transmitter")
 			curr_idx += chunk

@@ -1,14 +1,16 @@
 from transceiver import Transmitter
+from transceiver import Receiver
 from data_source_sink import DataSource
-from modems import QPSKModem 
+from modems import BPSKModem, QPSKModem 
 import argparse
 import time
-import zmq
 import numpy as np
 import struct
+import queue
 import logging
 log = logging.getLogger(__name__)
 
+from matplotlib import pyplot as plt
 
 def get_tx(sps, **params):
 	qpsk = QPSKModem(sps=sps)
@@ -17,34 +19,38 @@ def get_tx(sps, **params):
 	return tx
 
 
-def start_data_source(nchunks):
-	data = np.arange(512*nchunks-1, dtype=np.uint8)
-	src = DataSource(data)
-	src.start()
+def get_rx(sps, **params):
+	qpsk = QPSKModem(sps=sps)
+	qpsk.center_freq = 0
+	rx = Receiver(qpsk, **params)
+	return rx
 
 
-def receive():
-	cont = zmq.Context()
-	rx_socket = cont.socket(zmq.PULL)
-	rx_socket.connect("tcp://127.0.0.1:22222")
-	iq = np.array([])
-	for _ in range(nchunks):
-		rawdata = rx_socket.recv()
-		nbytes = len(rawdata)
-		nsamples = nbytes // 16 # assuming complex doubles
-		log.debug( f"Received {nbytes} bytes = {nsamples} complex samples" )
-		data = struct.unpack("dd"*nsamples, rawdata)
-		data = np.array(data)
-		iq = np.append(iq, data[::2] + 1j*data[1::2] )
-	log.info( f"Received {len(iq)} complex samples" )
-	return iq
+def watch_back_buffer(rx):
+	rx_bytes = []
+	nbytes = 0
+	while True:
+		try:
+			rawdata = rx.buf_back.get( timeout=1 )
+		except queue.Empty:
+			log.warning("Receiver timeout")
+			break
+		log.debug(f"Received {len(rawdata)} bytes")
+		nbytes += len(rawdata)
+		rx_bytes.append(rawdata)
+	databytes = b''
+	for byts in rx_bytes: databytes += byts
+	num_uint8s = nbytes #// 8
+	rx_data = struct.unpack("B"*num_uint8s, databytes)
+	return rx_data
+		
 
 
 def parse_args():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-n", "--nchunks", type=int, default=5)
-	parser.add_argument("-s", "--sps", type=int, default=4)
-	parser.add_argument("-p", "--print-data", action='store_true', default=False)
+	parser.add_argument("-s", "--sps", type=int, default=8)
+	parser.add_argument("-p", "--plot-data", action='store_true', default=False)
 	parser.add_argument("-l", "--log", type=str, default="info")
 	args = parser.parse_args()
 	return args
@@ -54,18 +60,41 @@ if __name__=="__main__":
 	args = parse_args()
 	nchunks = args.nchunks
 	sps = args.sps
-	print_data = args.print_data
-	loglevel = getattr(logging, args.log.upper(), None)
-	
+	plot_data = args.plot_data
+	loglevel = getattr(logging, args.log.upper(), None)	
 	logging.basicConfig(level=loglevel, format="{levelname} | {threadName} | {module} :: {message}", style="{")
 
-	tx = get_tx(sps=sps)
+	# Start Receiver
+	rx = get_rx(sps=sps, iport=22222)
+	rx.start()
+
+	time.sleep(1)
+
+	# Start Transmitter
+	tx = get_tx(sps=sps, iport=11111, oport=22222)
 	tx.start()
+
 	time.sleep(1)
 	print("")
-	start_data_source(nchunks)
 
-	iq = receive()
+	# Start sourcing random data to TX
+	data = (100*np.random.rand(512*nchunks-1)).astype(np.uint8)
+	src = DataSource(data, oport=11111)
+	src.start()
+
+	# Watch RX back buffer for the demodulated data
+	rx_data = watch_back_buffer(rx)
+
+	# stop TX and RX
 	tx.stop()
-	if print_data:
-		print(iq)
+	src.join(0)
+	rx.stop()
+
+	# Compare received data to original data
+	results = rx_data == data
+	error = 1 - sum(results)/len(results)
+	log.info(f"Data transfer complete. ERROR = {error*100}%\n")
+
+	if plot_data:
+		plt.plot(rx_data)
+		plt.show()

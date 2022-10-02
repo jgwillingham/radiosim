@@ -1,5 +1,6 @@
 from .modem import Modem
 from .constellations import bpsk_constellation
+import numpy as np
 
 class BPSKModem(Modem):
 	def __init__(self, sps=8):
@@ -9,6 +10,8 @@ class BPSKModem(Modem):
 				"num_positive_lobes":4, 
 				"alpha":0.33}
 		self.pulse_shape_filter = self.get_pulse_filter(**self.psparams)	
+		rrc = self.pulse_shape_filter
+		self.matched_filter = rrc / np.linalg.norm(rrc)**2
 
 
 	def __repr__(self):

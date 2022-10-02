@@ -95,7 +95,14 @@ class Modem(ABC):
 		upsampled_symbols = np.zeros(len(symbols)*self._sps, dtype=np.complex64)
 		upsampled_symbols[::self._sps] = symbols
 		bb_signal = np.convolve(upsampled_symbols, psfilter, 'same')
-		return bb_signal
+		return bb_signal.astype(np.complex64)
+
+
+	def apply_matched_filter(self, bbsig, mfilter):
+		"""
+		Performs a simple convolution for matched filtering on receive side
+		"""
+		return np.convolve(bbsig, mfilter, 'same').astype(np.complex64)
 
 
 ##################################################################
@@ -124,6 +131,27 @@ class Modem(ABC):
 	def upconvert(self, bb_signal):
 		nsamples = len(bb_signal)
 		pb_signal = bb_signal * self._nco.get_samples(nsamples)
-		return pb_signal
+		return pb_signal.astype(np.complex64)
 
 
+	def downconvert(self, pb_signal):
+		nsamples = len(pb_signal)
+		bb_signal = pb_signal * np.conj(self._nco.get_samples(nsamples))
+		return bb_signal.astype(np.complex64)
+
+
+##################################################################
+# _____Receiving_____
+# These methods are for translating the noise-corrupted demodulated
+# symbols to the best estimate of the true symbols
+##################################################################
+
+
+	def get_euclidean_estimates(self, complex_bbdata):
+		"""
+		Get estimates of the true symbols given the input complex
+		baseband data by using the minimum Euclidean distance
+		"""
+		symbolset = self.constellation.symbolset
+		closest_symbols = [symbolset[np.argmin(abs(sym - symbolset))] for sym in complex_bbdata]
+		return closest_symbols

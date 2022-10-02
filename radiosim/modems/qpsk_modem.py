@@ -1,5 +1,6 @@
 from .modem import Modem
 from .constellations import qpsk_constellation
+import numpy as np
 
 class QPSKModem(Modem):
 	def __init__(self, sps=8):
@@ -9,6 +10,8 @@ class QPSKModem(Modem):
 				"num_positive_lobes":8, 
 				"alpha":0.33}
 		self.pulse_shape_filter = self.get_pulse_filter(**self.psparams)	
+		rrc = self.pulse_shape_filter
+		self.matched_filter = rrc / np.linalg.norm(rrc)**2
 
 
 	def __repr__(self):

@@ -65,7 +65,7 @@ iport={self.iport}, oport={self.oport}, timeout={self.timeout})"
 		self.buf_front = queue.Queue( maxsize=self.buffer_size )
 		self.buf_mid   = queue.Queue( maxsize=self.buffer_size )
 		self.buf_back  = queue.Queue( maxsize=self.buffer_size )
-		log.info(f"Buffers initialized with maxsize={self.buffer_size}")
+		log.info(self.loghdr + f"Buffers initialized with maxsize={self.buffer_size}")
 
 
 	def initialize_sockets(self, iport, oport):
@@ -141,7 +141,7 @@ iport={self.iport}, oport={self.oport}, timeout={self.timeout})"
 				waveform_data =  self.buf_back.get( timeout=self.timeout/1e3 ) 
 			except queue.Empty:
 				continue
-			log.debug(self.loghdr + f"Sending {len(waveform_data)} samples")
+			log.debug(self.loghdr + f"Transmitting {len(waveform_data)} complex passband samples")
 			self.transmit_socket.send( waveform_data )
 			self.buf_back.task_done()
 		log.debug(self.loghdr + "Terminating _send_thread")

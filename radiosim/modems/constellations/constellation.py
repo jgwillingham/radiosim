@@ -29,6 +29,7 @@ class Constellation:
 		self._bps = int(_bps)
 		self._mapper = mapping
 		self._demapper = {symbol:word for word, symbol in mapping.items()}
+		self._symbolset = np.array(list(self._demapper.keys()))
 		self._bytewise_demapper = self._make_bytewise_demapper(mapping)
 
 
@@ -47,6 +48,14 @@ class Constellation:
 		to corresponding single bytes
 		"""
 		return self._bytewise_demapper
+
+
+	@property
+	def symbolset(self):
+		"""
+		Set of symbols in the constellation
+		"""
+		return self._symbolset
 
 
 	@property
