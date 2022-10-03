@@ -1,7 +1,5 @@
 import threading
 import queue
-import struct
-import numpy as np
 import logging
 log = logging.getLogger(__name__)
 
@@ -36,13 +34,9 @@ class Demodulator(threading.Thread):
 			if self.rx_state_query() != "DEMOD" and self.inbuffer.empty(): break
 			# get data from buffer
 			try:
-				pbdata_bytes = self.inbuffer.get( timeout=self.timeout/1e3 )
+				pbdata = self.inbuffer.get( timeout=self.timeout/1e3 )
 			except queue.Empty:
 				continue
-			# unpack the complex64 data
-			num_complex64s = len(pbdata_bytes)//8
-			pb_interleaved = np.array(struct.unpack("ff"*num_complex64s, pbdata_bytes), dtype=np.complex64)
-			pbdata = pb_interleaved[::2] + 1j*pb_interleaved[1::2]
 			# downconvert to baseband
 			bbdata = self.modem.downconvert(pbdata)
 			# clean signal with matched filter

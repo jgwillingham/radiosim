@@ -1,5 +1,7 @@
 from radiosim.tools.fsm import FSM
 from .demodulator import Demodulator
+import numpy as np
+import struct
 import queue
 import threading
 import zmq
@@ -89,13 +91,20 @@ class Receiver(FSM):
 		log.info(self.loghdr + "Listening for input")
 		while self.current_state != self.OFFLINE:
 			if self.recv_socket.poll( self.timeout, zmq.POLLIN ):
-				data = self.recv_socket.recv()
+				data = self.recv_socket.recv_serialized( self._deserialize )
 				self.buf_front.put(data)
 			if self.current_state == self.SEARCH and not self.buf_front.empty():
 				log.debug(self.loghdr + "Data found in front buffer. Starting demodulation.")
 				self.start_demodulation()
 		log.debug(self.loghdr + "Terminating _recv_thread")
 
+
+	def _deserialize(self, zmq_frames):
+		frame = zmq_frames[0]
+		num_c64 = len(frame)//8
+		flatdata = np.array( struct.unpack("ff"*num_c64, frame), dtype=np.complex64 )
+		complex_data = flatdata[::2] + 1j*flatdata[1::2]
+		return complex_data
 
 
 	@FSM.transition(SEARCH, DEMOD)
