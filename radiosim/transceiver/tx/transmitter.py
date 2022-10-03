@@ -72,14 +72,14 @@ iport={self.iport}, oport={self.oport}, timeout={self.timeout})"
 		self.iport = iport
 		self.oport = oport
 		tcp_lo = "tcp://127.0.0.1"
-		self.zmq_context = zmq.Context()
+		self.ctx = zmq.Context()
 
-		self.listen_socket = self.zmq_context.socket( zmq.PULL )
+		self.listen_socket = self.ctx.socket( zmq.PULL )
 		pull_addr = f"{tcp_lo}:{self.iport}"
 		self.listen_socket.bind( pull_addr )
 		log.info(self.loghdr + f"Listen socket = {pull_addr}")
 
-		self.transmit_socket = self.zmq_context.socket( zmq.PUSH )
+		self.transmit_socket = self.ctx.socket( zmq.PUSH )
 		push_addr = f"{tcp_lo}:{self.oport}"
 		self.transmit_socket.bind( push_addr )
 		log.info(self.loghdr + f"Output socket = {push_addr}")

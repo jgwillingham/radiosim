@@ -61,9 +61,9 @@ class Receiver(FSM):
 	def initialize_sockets(self, iport):
 		self.iport = iport
 		tcp_lo = "tcp://127.0.0.1"
-		self.zmq_context = zmq.Context()
+		self.ctx = zmq.Context()
 
-		self.recv_socket = self.zmq_context.socket( zmq.PULL )
+		self.recv_socket = self.ctx.socket( zmq.PULL )
 		pull_addr = f"{tcp_lo}:{self.iport}"
 		self.recv_socket.connect( pull_addr )
 		log.info(self.loghdr + f"Receive socket = {pull_addr}")
