@@ -1,4 +1,5 @@
 from radiosim.transceiver import Transmitter, Receiver
+from radiosim.channel import Channel
 from radiosim.data_source_sink import DataSource
 from radiosim.modems import BPSKModem, QPSKModem 
 import argparse
@@ -101,17 +102,15 @@ if __name__=="__main__":
 		modem = BPSKModem(sps=sps)
 	modem.center_freq = freq
 
-	# Start Receiver
-	rx = Receiver(modem, iport=22222)
-	rx.start()
-
-	time.sleep(1)
-
-	# Start Transmitter
+	rx = Receiver(modem, iport=33333)
 	tx = Transmitter(modem, iport=11111, oport=22222)
-	tx.start()
+	ch = Channel()
+	ch.add_node(txport=22222, rxport=33333)
 
+	rx.start()
 	time.sleep(1)
+	tx.start()
+	ch.start()
 
 	# Start sourcing random data to TX
 	data = (100*np.random.rand(512*nchunks-1)).astype(datatype)
