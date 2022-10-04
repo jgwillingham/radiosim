@@ -28,7 +28,7 @@ class Modulator(threading.Thread):
 
 
 	def run(self):
-		log.debug(f" {self.__str__()} - Modulator thread begin executing")
+		log.debug(f"{self.__str__()} - Modulator thread begin executing")
 		while True:
 			if self.tx_state_query() != "TRANSMIT" and self.inbuffer.empty():
 				break
@@ -47,4 +47,4 @@ class Modulator(threading.Thread):
 			self.outbuffer.put(pb_signal)
 			# make task as done
 			self.inbuffer.task_done()
-		log.debug(f" {self.__str__()} - Terminating modulator")
+		log.debug(f"{self.__str__()} - Terminating modulator")

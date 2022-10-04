@@ -29,7 +29,7 @@ class Demodulator(threading.Thread):
 
 
 	def run(self):
-		log.debug(f" {self.__str__()} - Demodulator thread begin executing")
+		log.debug(f"{self.__str__()} - Demodulator thread begin executing")
 		while True:
 			if self.rx_state_query() != "DEMOD" and self.inbuffer.empty(): break
 			# get data from buffer
@@ -52,4 +52,4 @@ class Demodulator(threading.Thread):
 			self.outbuffer.put(databytes)
 			# mark task as done
 			self.inbuffer.task_done()
-		log.debug(f" {self.__str__()} - Terminating demodulator")
+		log.debug(f"{self.__str__()} - Terminating demodulator")

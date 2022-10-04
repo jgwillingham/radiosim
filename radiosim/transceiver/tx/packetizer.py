@@ -28,7 +28,7 @@ class Packetizer(threading.Thread):
 
 
 	def run(self):
-		log.debug(f" {self.__str__()} - Packetizer thread begin executing")
+		log.debug(f"{self.__str__()} - Packetizer thread begin executing")
 		while True:
 			if self.tx_state_query() != "TRANSMIT" and self.inbuffer.empty():
 				break
@@ -41,4 +41,4 @@ class Packetizer(threading.Thread):
 			packet = data #tmp
 			self.outbuffer.put(packet)
 			self.inbuffer.task_done()
-		log.debug(f" {self.__str__()} - Terminating packetizer thread")
+		log.debug(f"{self.__str__()} - Terminating packetizer thread")
