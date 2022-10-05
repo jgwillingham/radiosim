@@ -102,33 +102,32 @@ if __name__=="__main__":
 		modem = BPSKModem(sps=sps)
 	modem.center_freq = freq
 
-	rx = Receiver(modem, iport=33333)
-	tx = Transmitter(modem, iport=11111, oport=22222)
+	rx1 = Receiver(modem, iport=33333)
+	tx1 = Transmitter(modem, iport=11111, oport=22222)
 	ch = Channel()
 	ch.add_node(txport=22222, rxport=33333)
 
-	rx.start()
+	rx1.start()
 	time.sleep(1)
-	tx.start()
+	tx1.start()
 	ch.start()
 
 	# Start sourcing random data to TX
 	data = (100*np.random.rand(512*nchunks-1)).astype(datatype)
 	dlen = len(bytearray(data))
-	src = DataSource(data, oport=11111)
+	src1 = DataSource(data, oport=11111)
 	print(f"Sourcing {dlen} bytes of {args.dtype} data to transmitter")
-	src.start()
+	src1.start()
 	print("Transmitting...")
 	# Watch RX back buffer for the demodulated data
-	rx_data = watch_back_buffer(rx, datatype, dlen)
-
+	rx1_data = watch_back_buffer(rx1, datatype, dlen)
 
 	# stop TX and RX
-	tx.stop()
-	src.join(0)
-	rx.stop()
+	tx1.stop()
+	src1.join(0)
+	rx1.stop()
 
 	# Compare received data to original data
-	results = rx_data == data
+	results = rx1_data == data
 	error = 1 - sum(results)/len(results)
 	print(f"Data transfer complete. ERROR = {error*100:.2f}%")

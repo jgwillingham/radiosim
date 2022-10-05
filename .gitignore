@@ -1,6 +1,6 @@
 *__pycache__*
 *.swp
-/build/
+*/build/*
 *.egg-info
 *.ipynb_checkpoints
 /dev-notebooks/
