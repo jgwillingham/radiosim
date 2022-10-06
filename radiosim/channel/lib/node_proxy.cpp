@@ -55,13 +55,16 @@ void NodeProxy::txlisten(){
 }
 
 
+// Unpack message bytes to vector of complex64 data
 std::vector<std::complex<float>> NodeProxy::unpack_to_complex64(std::string msg_str){
 	size_t nbytes = msg_str.length();
+
 	int nfloats = nbytes/sizeof(float);
 	std::vector<float> floatdata( nfloats );
 	for (int i=0; i<nfloats; i+=1){
-		memcpy(&(floatdata[i]), &msg_str[4*i], 4);
+		memcpy(&(floatdata[i]), &msg_str[sizeof(float)*i], sizeof(float));
 	}
+
 	int ncomplex = nfloats/2;
 	std::vector<std::complex<float>> complexdata(ncomplex);
 	for (int j=0; j<ncomplex; j++){

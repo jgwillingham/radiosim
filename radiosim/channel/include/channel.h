@@ -15,6 +15,7 @@ class Channel {
 		void start();
 		
 	private:
+		void run_main_loop();
 		std::vector<NodeProxy*> nodes;
 		zmq::context_t ctx;
 };
