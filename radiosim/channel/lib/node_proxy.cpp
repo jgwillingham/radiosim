@@ -1,5 +1,8 @@
 #include <iostream>
+#include <string>
+#include <vector>
 #include <thread>
+#include <complex>
 #include <zmq.hpp>
 #include <node_proxy.h>
 
@@ -45,6 +48,24 @@ void NodeProxy::txlisten(){
 	while (true) {
 		zmq::message_t msg;
 		txsocket.recv( msg, zmq::recv_flags::none );
-		
+		std::string msg_str = msg.to_string();
+		std::vector<std::complex<float>> data = unpack_to_complex64(msg_str);
+		txbuffer.push_back( data );
 	}
+}
+
+
+std::vector<std::complex<float>> NodeProxy::unpack_to_complex64(std::string msg_str){
+	size_t nbytes = msg_str.length();
+	int nfloats = nbytes/sizeof(float);
+	std::vector<float> floatdata( nfloats );
+	for (int i=0; i<nfloats; i+=1){
+		memcpy(&(floatdata[i]), &msg_str[4*i], 4);
+	}
+	int ncomplex = nfloats/2;
+	std::vector<std::complex<float>> complexdata(ncomplex);
+	for (int j=0; j<ncomplex; j++){
+		complexdata[j] = std::complex<float>(floatdata[2*j], floatdata[2*j+1]);
+	}
+	return complexdata;
 }

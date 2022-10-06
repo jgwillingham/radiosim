@@ -9,7 +9,7 @@
 class Channel {
 	public:
 		Channel();
-		~Channel(){};
+		~Channel();
 
 		void add_node(short txport, short rxport, int buffer_size);
 		void start();
