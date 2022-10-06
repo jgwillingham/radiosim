@@ -7,7 +7,7 @@
 Channel::Channel(){};
 
 void Channel::add_node(short txport, short rxport, int buffer_size){
-	NodeProxy* new_node = new NodeProxy(&ctx, txport, rxport, buffer_size);
+	NodeProxy* new_node = new NodeProxy(ctx, txport, rxport, buffer_size);
 	nodes.push_back( new_node );
 	std::cout << "Added new node to channel network" << std::endl;
 }

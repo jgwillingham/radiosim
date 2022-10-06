@@ -7,7 +7,7 @@
 
 class NodeProxy {
 	public:
-		NodeProxy(zmq::context_t* p_ctx, short txport, short rxport, int buffer_size);
+		NodeProxy(zmq::context_t &ctx, short txport, short rxport, int buffer_size);
 		~NodeProxy(){};
 
 		void start();
@@ -17,7 +17,7 @@ class NodeProxy {
 		std::vector<float> txbuffer;
 		std::vector<float> rxbuffer;
 	private:
-		void init_sockets(zmq::context_t* p_ctx, short txport, short rxport);
+		void init_sockets(zmq::context_t &ctx, short txport, short rxport);
 		void init_buffers(int buffer_size);
 		void txlisten();
 
