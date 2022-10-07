@@ -29,8 +29,8 @@ void NodeProxy::init_sockets(zmq::context_t &ctx, short txport, short rxport){
 
 // Initialize buffers
 void NodeProxy::init_buffers(int buffer_size){
-	txbuffer.reserve(buffer_size);
-	rxbuffer.reserve(buffer_size);
+	//txbuffer.reserve(buffer_size);
+	//rxbuffer.reserve(buffer_size);
 }
 
 
@@ -49,24 +49,25 @@ void NodeProxy::txlisten(){
 		zmq::message_t msg;
 		txsocket.recv( msg, zmq::recv_flags::none );
 		std::string msg_str = msg.to_string();
-		std::vector<std::complex<float>> data = unpack_to_complex64(msg_str);
-		txbuffer.push_back( data );
+		vector_c64 data = unpack_to_complex64(msg_str);
+		txbuffer.push( data );
 	}
 }
 
 
 // Unpack message bytes to vector of complex64 data
-std::vector<std::complex<float>> NodeProxy::unpack_to_complex64(std::string msg_str){
+vector_c64 NodeProxy::unpack_to_complex64(std::string msg_str){
 	size_t nbytes = msg_str.length();
+	size_t floatsize = sizeof(float);
 
-	int nfloats = nbytes/sizeof(float);
+	int nfloats = nbytes/floatsize;
 	std::vector<float> floatdata( nfloats );
 	for (int i=0; i<nfloats; i+=1){
-		memcpy(&(floatdata[i]), &msg_str[sizeof(float)*i], sizeof(float));
+		memcpy(&(floatdata[i]), &msg_str[floatsize*i], floatsize);
 	}
 
 	int ncomplex = nfloats/2;
-	std::vector<std::complex<float>> complexdata(ncomplex);
+	vector_c64 complexdata(ncomplex);
 	for (int j=0; j<ncomplex; j++){
 		complexdata[j] = std::complex<float>(floatdata[2*j], floatdata[2*j+1]);
 	}
