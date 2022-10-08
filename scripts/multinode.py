@@ -7,6 +7,7 @@ import time
 import numpy as np
 import struct
 import queue
+import threading
 import logging
 log = logging.getLogger(__name__)
 
@@ -59,7 +60,7 @@ def parse_args():
 	return args
 
 
-def watch_back_buffer(rx, dtype, dlen):
+def watch_back_buffer(rx, outputs, dtype, dlen):
 	rx_bytes = []
 	nbytes = 0
 	while nbytes < dlen:
@@ -67,10 +68,10 @@ def watch_back_buffer(rx, dtype, dlen):
 			rawdata = rx.buf_back.get( timeout=1 )
 		except queue.Empty:
 			continue
-		log.debug(f"Received {len(rawdata)} bytes")
+		#log.debug(f"Received {len(rawdata)} bytes")
 		nbytes += len(rawdata)
 		rx_bytes.append(rawdata)
-	print(f"Received all {dlen} bytes of data")
+	print(rx.__str__() + f" received all {dlen} bytes of data")
 	databytes = b''
 	for byts in rx_bytes: databytes += byts
 	if dtype == np.uint8:
@@ -83,9 +84,16 @@ def watch_back_buffer(rx, dtype, dlen):
 		num_float64s = nbytes // 8
 		rx_data = struct.unpack("d"*num_float64s, databytes)
 
-	return rx_data
+	outputs.append(rx_data)
 		
 
+def watch_all_back_buffers(nodes, outputs, dtype, dlen):
+	threads = []
+	for node in nodes:
+		new_thread = threading.Thread(target=watch_back_buffer, args=(node[0], outputs, dtype, dlen))
+		new_thread.start()
+		threads.append(new_thread)
+	return threads
 
 
 if __name__=="__main__":
@@ -136,9 +144,10 @@ if __name__=="__main__":
 	ch.start()
 	for node in nodes: node[2].start()
 
-	# Watch RX back buffer for the demodulated data
-	rx1_data = watch_back_buffer(nodes[0][0], datatype, dlen)
-	#rx2_data = watch_back_buffer(rx2, datatype, dlen)
+	# Watch RX back buffers for the demodulated data
+	outputs = []
+	threads = watch_all_back_buffers(nodes, outputs, datatype, dlen)
+	for thread in threads: thread.join()
 
 	# stop TX and RX
 	for node in nodes: node[0].stop()
@@ -146,6 +155,7 @@ if __name__=="__main__":
 	for node in nodes: node[2].join(0)
 
 	# Compare received data to original data
-	results = rx1_data == data
-	error = 1 - sum(results)/len(results)
-	print(f"Data transfer complete. ERROR = {error*100:.2f}%")
+	for node_output in outputs:
+		results = node_output == data
+		error = 1 - sum(results)/len(results)
+		print(f"Data transfer complete. ERROR = {error*100:.2f}%")
