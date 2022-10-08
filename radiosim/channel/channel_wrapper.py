@@ -1,6 +1,7 @@
 import ctypes
+import os
 
-_lib = ctypes.cdll.LoadLibrary("/home/user/repos/radiosim/radiosim/channel/build/lib/libchannel.so")
+_lib = ctypes.cdll.LoadLibrary(os.path.dirname(__file__) + "/build/lib/libchannel.so")
 
 class Channel:
 	def __init__(self):

@@ -166,9 +166,9 @@ iport={self.iport}, oport={self.oport}, timeout={self.timeout})"
 	def stop_transmitting(self):
 		log.info(self.loghdr + "Stopping transmission. Clearing buffers.")
 		self.stop_listening()
-		self.packetizer.join(2)   # clear front buffer + stop packetizer
-		self.modulator.join(2)    # clear middle buffer + stop modulator
-		self._send_thread.join(2) # clear back buffer + stop output
+		self.packetizer.join()   # clear front buffer + stop packetizer
+		self.modulator.join()    # clear middle buffer + stop modulator
+		self._send_thread.join() # clear back buffer + stop output
 		if not self.check_for_clear_buffers():
 			log.warning(self.loghdr + "Failed to clear buffers")
 		else:
@@ -178,7 +178,7 @@ iport={self.iport}, oport={self.oport}, timeout={self.timeout})"
 	#@FSM.transition(READY, OFFLINE)
 	def stop_listening(self):
 		log.debug(self.loghdr + "Going offline")
-		self._listen_thread.join(2) 
+		self._listen_thread.join() 
 
 
 	def check_for_clear_buffers(self):

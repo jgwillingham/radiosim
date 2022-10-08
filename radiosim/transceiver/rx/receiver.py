@@ -132,18 +132,15 @@ class Receiver(FSM):
 	def stop_receiving(self):
 		log.info(self.loghdr + "Stopping receiving. Clearing buffers.")
 		self.stop_listening()
-		self.demodulator.join(2)    # clear front buffer + stop demodulator
-		if not self.check_for_clear_buffers():
-			log.warning(self.loghdr + "Failed to clear buffers")
+		self.demodulator.join()    # clear front buffer + stop demodulator
+		if not self.buf_front.empty():
+			log.warning(self.loghdr + "Failed to clear front buffer")
+		elif not self.buf_back.empty():
+			log.warning(self.loghdr + "Data remaining in back buffer")
 		else:
 			log.debug(self.loghdr + "Buffers cleared")
 
 
 	def stop_listening(self):
 		log.debug(self.loghdr + "Going offline")
-		self._recv_thread.join(2) 
-
-
-	def check_for_clear_buffers(self):
-		return self.buf_front.empty() \
-			and self.buf_back.empty()
+		self._recv_thread.join() 
