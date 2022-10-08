@@ -5,6 +5,8 @@ import argparse
 import time
 import numpy as np
 import struct
+import zmq
+import threading
 import queue
 import logging
 log = logging.getLogger(__name__)
@@ -51,31 +53,54 @@ def parse_args():
 
 
 def watch_back_buffer(rx, dtype, dlen):
-	rx_bytes = []
+	global finished
+	rx_bytes = b''
 	nbytes = 0
 	while nbytes < dlen:
 		try:
 			rawdata = rx.buf_back.get( timeout=1 )
 		except queue.Empty:
+			log.debug("Buffer is empty")
 			continue
 		log.debug(f"Received {len(rawdata)} bytes")
 		nbytes += len(rawdata)
-		rx_bytes.append(rawdata)
+		rx_bytes += rawdata
 	print(f"Received all {dlen} bytes of data")
-	databytes = b''
-	for byts in rx_bytes: databytes += byts
+	finished = True
 	if dtype == np.uint8:
 		num_uint8s = nbytes
-		rx_data = struct.unpack("B"*num_uint8s, databytes)
+		rx_data = struct.unpack("B"*num_uint8s, rx_bytes)
 	elif dtype == np.float32:
 		num_float32s = nbytes // 4
-		rx_data = struct.unpack("f"*num_float32s, databytes)
+		rx_data = struct.unpack("f"*num_float32s, rx_bytes)
 	elif dtype == np.float64:
 		num_float64s = nbytes // 8
-		rx_data = struct.unpack("d"*num_float64s, databytes)
+		rx_data = struct.unpack("d"*num_float64s, rx_bytes)
 
 	return rx_data
 		
+
+
+def run_middleman(txport, rxport):
+	mm_thread = threading.Thread( target=_middleman, args=(txport, rxport) )
+	mm_thread.daemon = True
+	mm_thread.start()
+
+
+def _middleman(txport, rxport):
+	global finished
+	ctx = zmq.Context()
+	txsock = ctx.socket(zmq.PULL)
+	txsock.bind(f"tcp://127.0.0.1:{txport}")
+	rxsock = ctx.socket(zmq.PUSH)
+	rxsock.bind(f"tcp://127.0.0.1:{rxport}")
+	
+	while not finished:
+		data = txsock.recv()
+		rxsock.send(data)
+	txsock.close()
+	rxsock.close()
+	
 
 
 
@@ -102,7 +127,7 @@ if __name__=="__main__":
 	modem.center_freq = freq
 
 	# Start Receiver
-	rx = Receiver(modem, iport=22222)
+	rx = Receiver(modem, iport=33333)
 	rx.start()
 
 	time.sleep(1)
@@ -121,6 +146,9 @@ if __name__=="__main__":
 	src.start()
 	print("Transmitting...")
 	# Watch RX back buffer for the demodulated data
+	global finished
+	finished = False
+	run_middleman(22222, 33333)
 	rx_data = watch_back_buffer(rx, datatype, dlen)
 
 
