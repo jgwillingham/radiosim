@@ -11,7 +11,7 @@ class Channel {
 		Channel();
 		~Channel();
 
-		void add_node(short txport, short rxport, int buffer_size);
+		void add_node(unsigned int txport, unsigned int rxport, int buffer_size);
 		void start();
 		
 	private:
@@ -19,5 +19,14 @@ class Channel {
 		std::vector<NodeProxy*> nodes;
 		zmq::context_t ctx;
 };
+
+
+extern "C"{
+	Channel* channel_new(){return new Channel;}
+	void channel_add_node(Channel* channel, unsigned int txport, unsigned int rxport, int buffer_size){
+		channel->add_node(txport, rxport, buffer_size);
+	}
+	void channel_start(Channel* channel){channel->start();}
+}
 
 #endif
