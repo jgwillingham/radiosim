@@ -15,6 +15,19 @@ NodeProxy::NodeProxy(zmq::context_t& ctx, unsigned int txport, unsigned int rxpo
 }
 
 
+// Destructor
+NodeProxy::~NodeProxy(){
+	tx_is_active.store(false);
+	if (txlisten_thread.joinable()){ 
+		txlisten_thread.join();
+	}
+	rx_is_active.store(false);
+	if (rxsend_thread.joinable()){
+		rxsend_thread.join();
+	}
+}
+
+
 // Initialize sockets
 void NodeProxy::init_sockets(zmq::context_t& ctx, unsigned int txport, unsigned int rxport){
 	this->txport = txport;
@@ -37,10 +50,11 @@ void NodeProxy::init_buffers(int buffer_size){
 
 // Startup node proxy threads
 void NodeProxy::start(){
-	std::thread txlisten_thread( &NodeProxy::txlisten, this);
-	std::thread rxsend_thread( &NodeProxy::rxsend, this);
-	txlisten_thread.detach();
-	rxsend_thread.detach();
+	tx_is_active.store(true);
+	this->txlisten_thread = std::thread( &NodeProxy::txlisten, this);
+
+	rx_is_active.store(true);
+	this->rxsend_thread = std::thread( &NodeProxy::rxsend, this);
 }
 
 
@@ -48,7 +62,7 @@ void NodeProxy::start(){
 void NodeProxy::txlisten(){
 	std::cout << "NodeProxy listening on localhost:" << txport << std::endl;
 
-	while (true) {
+	while ( tx_is_active.load() ) {
 		zmq::message_t msg;
 		txsocket.recv( msg, zmq::recv_flags::none );
 		vector_c64 data = unpack_to_complex64(msg);
@@ -71,7 +85,7 @@ void NodeProxy::rxsend(){
 	std::cout << "NodeProxy sending from localhost:" << rxport << std::endl;
 	vector_c64 data;
 	data.reserve(512);
-	while (true){
+	while ( rx_is_active.load() ){
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		if (not rxbuffer.empty()){
 			data = rxbuffer.front();

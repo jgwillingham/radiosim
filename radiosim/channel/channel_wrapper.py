@@ -6,7 +6,7 @@ class Channel:
 	def __init__(self):
 		self.obj = _lib.channel_new()
 
-	def add_node(self, txport, rxport, buffer_size):
+	def add_node(self, txport, rxport, buffer_size=512):
 		_lib.channel_add_node(self.obj, txport, rxport, buffer_size)
 
 	def start(self):

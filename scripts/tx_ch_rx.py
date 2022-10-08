@@ -121,7 +121,7 @@ if __name__=="__main__":
 		rx = Receiver(mdm, iport=rxport)
 		tx = Transmitter(mdm, iport=srcport, oport=txport) 
 		src = DataSource(data, oport=srcport)
-		ch.add_node(txport, rxport, 512)
+		ch.add_node(txport, rxport)
 		nodes.append( (rx,tx,src) )
 
 	for node in nodes: node[0].start()
