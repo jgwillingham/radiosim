@@ -11,6 +11,10 @@ Channel::Channel(){};
 
 // Destructor
 Channel::~Channel(){
+	channel_is_on.store(false);
+	if (loop_thread.joinable()){
+		loop_thread.join();
+	}
 	ctx.shutdown();
 	ctx.close();
 	int num_nodes = nodes.size();
@@ -35,8 +39,8 @@ void Channel::start(){
 		std::cout << "Starting node " << i << std::endl;
 		nodes[i]->start();
 	}
-	std::thread loop_thread(&Channel::run_main_loop, this);
-	loop_thread.detach();
+	channel_is_on.store(true);
+	loop_thread = std::thread(&Channel::run_main_loop, this);
 }
 
 
@@ -44,7 +48,7 @@ void Channel::start(){
 void Channel::run_main_loop(){
 	vector_c64 data;
 	data.reserve(512);
-	while (true){
+	while ( channel_is_on.load() ){
 		std::this_thread::sleep_for( std::chrono::milliseconds(100) );
 		for (auto& node : nodes){
 			if (not node->txbuffer.empty()){

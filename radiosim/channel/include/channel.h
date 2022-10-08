@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include <thread>
+#include <atomic>
 #include <zmq.hpp>
 #include "node_proxy.h"
 
@@ -16,6 +18,9 @@ class Channel {
 		
 	private:
 		void run_main_loop();
+		std::thread loop_thread;
+		std::atomic<bool> channel_is_on;
+
 		std::vector<NodeProxy*> nodes;
 		zmq::context_t ctx;
 };
