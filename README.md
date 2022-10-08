@@ -2,6 +2,10 @@
 
 RadioSim is a simulation tool for RF digital communications written in Python and C++. 
 
+<h1 align="center">
+<img src="/extra/radiosim.drawio.svg" width="100">
+</h1><br>
+
 ### Overview
 The systems simulated by RadioSim can be broken down into 3 major parts: the transmitter (TX), the receiver (RX), and the channel. The data sent by the transmitter are corrupted by noise in the channel and the task of the receiver is to recover the data from the corrupted signal. The implementation of these parts is in `Transmitter`, `Receiver`, and `Channel` classes. In general, there can be many transmitters and receivers working at the same time whereas there will typically only be a single `Channel` object.
 
