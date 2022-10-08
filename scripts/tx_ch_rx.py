@@ -17,7 +17,11 @@ SUPPORTED_MODULATIONS = ["bpsk", "qpsk"]
 
 def parse_args():
 	parser = argparse.ArgumentParser()
-	parser.add_argument("-n", 
+	parser.add_argument("-n",
+			"--num-nodes",
+			type=int,
+			default=1)
+	parser.add_argument("-c", 
 			"--nchunks", 
 			type=int, 
 			default=10)
@@ -82,6 +86,7 @@ def watch_back_buffer(rx, dtype, dlen):
 
 if __name__=="__main__":
 	args = parse_args()
+	num_nodes = args.num_nodes
 	nchunks = args.nchunks
 	sps = args.sps
 	datatype = eval(f"np.{args.dtype.lower()}")
@@ -97,35 +102,42 @@ if __name__=="__main__":
 		
 	print(f"Modem configured for {modulation.upper()} at {freq/1e9} GHz")
 	if modulation == "qpsk":
-		modem = QPSKModem(sps=sps)
+		modem = QPSKModem
 	elif modulation == "bpsk":
-		modem = BPSKModem(sps=sps)
-	modem.center_freq = freq
+		modem = BPSKModem
 
-	ch = Channel()
-	ch.add_node(txport=22222, rxport=33333, buffer_size=512)
-	rx1 = Receiver(modem, iport=33333)
-	tx1 = Transmitter(modem, iport=11111, oport=22222)
-
-	rx1.start()
-	time.sleep(1)
-	tx1.start()
-	ch.start()
-
-	# Start sourcing random data to TX
 	data = (100*np.random.rand(512*nchunks-1)).astype(datatype)
 	dlen = len(bytearray(data))
-	src1 = DataSource(data, oport=11111)
-	print(f"Sourcing {dlen} bytes of {args.dtype} data to transmitter")
-	src1.start()
-	print("Transmitting...")
+
+	ch = Channel()
+
+	nodes = []
+	for i in range(num_nodes):
+		txport = 22222+i
+		rxport = 33333+i
+		srcport= 11111+i
+		mdm = modem(sps=sps)
+		mdm.center_freq = freq + i*10e6
+		rx = Receiver(mdm, iport=rxport)
+		tx = Transmitter(mdm, iport=srcport, oport=txport) 
+		src = DataSource(data, oport=srcport)
+		ch.add_node(txport, rxport, 512)
+		nodes.append( (rx,tx,src) )
+
+	for node in nodes: node[0].start()
+	time.sleep(1)
+	for node in nodes: node[1].start()
+	ch.start()
+	for node in nodes: node[2].start()
+
 	# Watch RX back buffer for the demodulated data
-	rx1_data = watch_back_buffer(rx1, datatype, dlen)
+	rx1_data = watch_back_buffer(nodes[0][0], datatype, dlen)
+	#rx2_data = watch_back_buffer(rx2, datatype, dlen)
 
 	# stop TX and RX
-	tx1.stop()
-	src1.join(0)
-	rx1.stop()
+	for node in nodes: node[0].stop()
+	for node in nodes: node[1].stop()
+	for node in nodes: node[2].join(0)
 
 	# Compare received data to original data
 	results = rx1_data == data
