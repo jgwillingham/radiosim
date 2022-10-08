@@ -1,5 +1,7 @@
 # RadioSim
-RadioSim is a simulation tool for RF digital communications written in Python and C++. The aim of RadioSim is to provide a leightweight simulator that can be used for very early stage design of cognitive radio systems. With rapid development in mind, the API is entirely in Python. The C++ simply provides a way to sidestep the GIL for improved performance under the hood.
+RadioSim is a simulation tool for RF digital communications written in Python and C++. 
+
+The aim of this project is to develop a wireless network simulator that is lightweight but still powerful enough for basic proof-of-concept testing of cognitive radio applications. Much of RadioSim is a thin Python wrapper over highly multithreaded C++ code (thereby side-stepping limitations imposed by the GIL to improve performance). With the basic objects provided by the Python interface, cognitive engines can easily be written in Python and simulated.
 
 <h1 align="center">
  <img src="/extra/radiosim.drawio.svg" width="320">
