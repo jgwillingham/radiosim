@@ -60,8 +60,6 @@ void NodeProxy::start(){
 
 // Listen on txsocket for data
 void NodeProxy::txlisten(){
-	std::cout << "NodeProxy listening on localhost:" << txport << std::endl;
-
 	while ( tx_is_active.load() ) {
 		zmq::message_t msg;
 		txsocket.recv( msg, zmq::recv_flags::none );
@@ -82,7 +80,6 @@ inline vector_c64 NodeProxy::unpack_to_complex64(zmq::message_t& msg){
 
 // Send channel data out rxsocket
 void NodeProxy::rxsend(){
-	std::cout << "NodeProxy sending from localhost:" << rxport << std::endl;
 	vector_c64 data;
 	data.reserve(512);
 	while ( rx_is_active.load() ){
