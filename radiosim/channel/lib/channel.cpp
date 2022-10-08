@@ -21,7 +21,7 @@ Channel::~Channel(){
 
 
 // Add a new node to the channel network
-void Channel::add_node(short txport, short rxport, int buffer_size){
+void Channel::add_node(unsigned int txport, unsigned int rxport, int buffer_size){
 	NodeProxy* new_node = new NodeProxy(ctx, txport, rxport, buffer_size);
 	nodes.push_back( new_node );
 	std::cout << "Added new node to channel network" << std::endl;
@@ -35,7 +35,8 @@ void Channel::start(){
 		std::cout << "Starting node " << i << std::endl;
 		nodes[i]->start();
 	}
-	run_main_loop();
+	std::thread loop_thread(&Channel::run_main_loop, this);
+	loop_thread.detach();
 }
 
 
@@ -47,11 +48,8 @@ void Channel::run_main_loop(){
 		std::this_thread::sleep_for( std::chrono::milliseconds(100) );
 		for (auto& node : nodes){
 			if (not node->txbuffer.empty()){
-				std::cout << "Found data in buffer: ";
 				data = node->txbuffer.front();
 				node->txbuffer.pop();
-				for (const auto& value : data){ std::cout << value; };
-				std::cout << std::endl;
 				node->rxbuffer.push( data );
 			}
 		}

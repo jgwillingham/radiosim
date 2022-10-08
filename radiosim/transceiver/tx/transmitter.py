@@ -81,7 +81,7 @@ iport={self.iport}, oport={self.oport}, timeout={self.timeout})"
 
 		self.transmit_socket = self.ctx.socket( zmq.PUSH )
 		push_addr = f"{tcp_lo}:{self.oport}"
-		self.transmit_socket.bind( push_addr )
+		self.transmit_socket.connect( push_addr )
 		log.info(self.loghdr + f"Output socket = {push_addr}")
 
 

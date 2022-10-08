@@ -1,1 +1,1 @@
-from .python import *
+from .channel_wrapper import Channel

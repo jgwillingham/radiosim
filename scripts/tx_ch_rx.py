@@ -102,10 +102,10 @@ if __name__=="__main__":
 		modem = BPSKModem(sps=sps)
 	modem.center_freq = freq
 
+	ch = Channel()
+	ch.add_node(txport=22222, rxport=33333, buffer_size=512)
 	rx1 = Receiver(modem, iport=33333)
 	tx1 = Transmitter(modem, iport=11111, oport=22222)
-	ch = Channel()
-	ch.add_node(txport=22222, rxport=33333)
 
 	rx1.start()
 	time.sleep(1)
