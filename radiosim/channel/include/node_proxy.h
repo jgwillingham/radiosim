@@ -64,8 +64,8 @@ class NodeProxy {
 		void init_buffers(int buffer_size);
 		void txlisten();
 		void rxsend();
-		vector_c64 unpack_to_complex64(std::string& msg_bytes);
-		zmq::message_t pack_bytes_into_message(vector_c64 complexdata);
+		vector_c64 unpack_to_complex64(zmq::message_t& msg);
+		zmq::message_t pack_complex64_to_message(vector_c64& complexdata);
 
 		zmq::socket_t txsocket;
 		zmq::socket_t rxsocket;

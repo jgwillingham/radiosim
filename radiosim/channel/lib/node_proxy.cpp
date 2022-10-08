@@ -51,29 +51,17 @@ void NodeProxy::txlisten(){
 	while (true) {
 		zmq::message_t msg;
 		txsocket.recv( msg, zmq::recv_flags::none );
-		std::string msg_bytes = msg.to_string();
-		vector_c64 data = unpack_to_complex64(msg_bytes);
+		vector_c64 data = unpack_to_complex64(msg);
 		txbuffer.push( data );
 	}
 }
 
 
 // Unpack message bytes to vector of complex64 data
-vector_c64 NodeProxy::unpack_to_complex64(std::string& msg_bytes){
-	size_t nbytes = msg_bytes.length();
-	size_t floatsize = sizeof(float);
-
-	int nfloats = nbytes/floatsize;
-	std::vector<float> floatdata( nfloats );
-	for (int i=0; i<nfloats; i+=1){
-		memcpy(&(floatdata[i]), &msg_bytes[floatsize*i], floatsize);
-	}
-
-	int ncomplex = nfloats/2;
-	vector_c64 complexdata(ncomplex);
-	for (int j=0; j<ncomplex; j++){
-		complexdata[j] = std::complex<float>(floatdata[2*j], floatdata[2*j+1]);
-	}
+inline vector_c64 NodeProxy::unpack_to_complex64(zmq::message_t& msg){
+	size_t nbytes = msg.size();
+	vector_c64 complexdata( nbytes/2/sizeof(float) );
+	memcpy(complexdata.data(), msg.data(), nbytes);
 	return complexdata;
 }
 
@@ -88,7 +76,7 @@ void NodeProxy::rxsend(){
 		if (not rxbuffer.empty()){
 			data = rxbuffer.front();
 			rxbuffer.pop();
-			zmq::message_t msg = pack_bytes_into_message(data);
+			zmq::message_t msg = pack_complex64_to_message(data);
 			rxsocket.send( msg, zmq::send_flags::none );
 		}
 	}
@@ -96,19 +84,10 @@ void NodeProxy::rxsend(){
 
 
 
-// Serialize complex64 data into bytes (string) object
-zmq::message_t NodeProxy::pack_bytes_into_message(vector_c64 complexdata){
-	size_t ncomplex = complexdata.size();
-	size_t nfloats = 2*ncomplex;
-
-	std::vector<float> floatdata(nfloats);
-	for (int i=0; i<ncomplex; i++){
-		std::complex<float> cdatum = complexdata[i];
-		floatdata[2*i] = cdatum.real();
-		floatdata[2*i+1] = cdatum.imag();
-	}
-
-	zmq::message_t msg(nfloats*sizeof(float));
-	memcpy(msg.data(), floatdata.data(), nfloats*sizeof(float));
+// Write ZMQ message object from vector of complex64 data
+inline zmq::message_t NodeProxy::pack_complex64_to_message(vector_c64& complexdata){
+	size_t nbytes = 2*complexdata.size()*sizeof(float);
+	zmq::message_t msg(nbytes);
+	memcpy(msg.data(), complexdata.data(), nbytes);
 	return msg;
 }
