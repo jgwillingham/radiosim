@@ -47,6 +47,10 @@ def parse_args():
 			type=str, 
 			default="qpsk", 
 			choices=SUPPORTED_MODULATIONS)
+	parser.add_argument("-p",
+			"--noise-pwr",
+			type=float,
+			default=0.0)
 	parser.add_argument("-v",
 			"--verbose",
 			action="store_true",
@@ -92,6 +96,7 @@ if __name__=="__main__":
 	datatype = eval(f"np.{args.dtype.lower()}")
 	freq = args.freq
 	modulation = args.modulation.lower()
+	noise_pwr = args.noise_pwr
 	verbose = args.verbose
 	loglevel = getattr(logging, args.log.upper(), None)
 
@@ -109,7 +114,8 @@ if __name__=="__main__":
 	data = (100*np.random.rand(512*nchunks-1)).astype(datatype)
 	dlen = len(bytearray(data))
 
-	ch = Channel()
+	noise_energy = np.sqrt(noise_pwr)
+	ch = Channel(noise_energy)
 
 	nodes = []
 	for i in range(num_nodes):

@@ -6,7 +6,7 @@
 #include <channel.h>
 
 // Constructor
-Channel::Channel(){};
+Channel::Channel(float noise_energy) : normal{0.0, noise_energy} {};
 
 
 // Destructor
@@ -54,8 +54,21 @@ void Channel::run_main_loop(){
 			if (not node->txbuffer.empty()){
 				data = node->txbuffer.front();
 				node->txbuffer.pop();
+				vector_c64 noise = generate_complex_awgn(data.size());
+				data = data + noise;
 				node->rxbuffer.push( data );
 			}
 		}
 	}
+}
+
+
+
+// Generate nsamples of complex additive white gaussian noise
+vector_c64 Channel::generate_complex_awgn(size_t nsamples){
+	vector_c64 noise(nsamples);
+	for (int i=0; i<nsamples; i++){
+		noise[i] = std::complex<float>(normal(randgen), normal(randgen));
+	}
+	return noise;
 }

@@ -8,7 +8,9 @@ int main(){
 	unsigned int rxport = 22222;
 	int bufsize = 512;
 
-	Channel channel;
+	float noise_energy = 0.1;
+
+	Channel channel(noise_energy);
 	channel.add_node(txport, rxport, bufsize);
 	channel.add_node(txport+1, rxport+1, bufsize);
 
