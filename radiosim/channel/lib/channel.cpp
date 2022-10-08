@@ -41,14 +41,18 @@ void Channel::start(){
 
 // Runs the main loop of the channel - reading from buffers, processing, and writing to buffers
 void Channel::run_main_loop(){
+	vector_c64 data;
+	data.reserve(512);
 	while (true){
+		std::this_thread::sleep_for( std::chrono::milliseconds(100) );
 		for (auto& node : nodes){
-			std::this_thread::sleep_for( std::chrono::milliseconds(100) );
 			if (not node->txbuffer.empty()){
-				std::cout << "\nFound data in buffer:" << std::endl;
-				vector_c64 data = node->txbuffer.front();
+				std::cout << "Found data in buffer: ";
+				data = node->txbuffer.front();
 				node->txbuffer.pop();
-				for (auto& value : data){std::cout << value;};
+				for (const auto& value : data){ std::cout << value; };
+				std::cout << std::endl;
+				node->rxbuffer.push( data );
 			}
 		}
 	}
