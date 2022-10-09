@@ -1,5 +1,6 @@
 *__pycache__*
 *.swp
+/build/
 /radiosim/channel/build/
 *.egg-info
 *.ipynb_checkpoints

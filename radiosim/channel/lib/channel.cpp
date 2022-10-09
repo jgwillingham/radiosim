@@ -17,8 +17,8 @@ Channel::~Channel(){
 	}
 	ctx.shutdown();
 	ctx.close();
-	int num_nodes = nodes.size();
-	for (int i=0; i<num_nodes; i++){
+	size_t num_nodes = nodes.size();
+	for (size_t i=0; i<num_nodes; i++){
 		delete nodes[i];
 	}
 };
@@ -64,7 +64,7 @@ void Channel::run_main_loop(){
 // Generate nsamples of complex additive white gaussian noise
 vector_c64 Channel::generate_complex_awgn(size_t nsamples){
 	vector_c64 noise(nsamples);
-	for (int i=0; i<nsamples; i++){
+	for (size_t i=0; i<nsamples; i++){
 		noise[i] = std::complex<float>(normal(randgen), normal(randgen));
 	}
 	return noise;

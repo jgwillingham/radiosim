@@ -10,6 +10,7 @@
 #ifndef _CHANNEL_INCLUDED_
 #define _CHANNEL_INCLUDED_
 
+
 class Channel {
 	public:
 		Channel(float noise_energy);
