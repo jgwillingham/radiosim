@@ -52,7 +52,7 @@ setup(name = 'radiosim',
 	author_email = 'jgwillin@gmail.com',
 	url = 'https://github.com/jgwillingham/radiosim',
 	packages = find_packages(),
-	ext_modules = [CMakeExtension('radiosim.channel.build.lib.channel')],
+	ext_modules = [CMakeExtension('radiosim.core.build.lib.channel')],
 	cmdclass={
 		'build_ext': build_ext,
 	}

@@ -1,6 +1,6 @@
-from radiosim.transceiver import Transmitter, Receiver
-from radiosim.data_source_sink import DataSource
-from radiosim.modems import BPSKModem, QPSKModem 
+from radiosim.node import Transmitter, Receiver
+from radiosim.node.data_source_sink import DataSource
+from radiosim.node.modems import BPSKModem, QPSKModem 
 import argparse
 import time
 import numpy as np

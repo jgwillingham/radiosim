@@ -13,5 +13,5 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 		
-add_subdirectory(radiosim/channel/lib)
-add_subdirectory(radiosim/channel/apps)
+add_subdirectory(radiosim/core/lib)
+add_subdirectory(radiosim/core/apps)

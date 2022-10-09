@@ -1,5 +1,5 @@
 import unittest
-from radiosim.modems import QPSKModem
+from radiosim.node.modems import QPSKModem
 import numpy as np
 import struct
 

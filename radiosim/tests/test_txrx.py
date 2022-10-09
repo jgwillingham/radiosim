@@ -1,7 +1,7 @@
 import unittest
-from radiosim.transceiver import Transmitter, Receiver
-from radiosim.data_source_sink import DataSource
-from radiosim.modems import QPSKModem 
+from radiosim.node import Transmitter, Receiver
+from radiosim.node.data_source_sink import DataSource
+from radiosim.node.modems import QPSKModem 
 import time
 import numpy as np
 import struct
