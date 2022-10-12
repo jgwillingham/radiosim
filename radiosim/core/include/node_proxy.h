@@ -1,48 +1,16 @@
 #include <iostream>
-#include <vector>
 #include <queue>
 #include <thread>
 #include <atomic>
 #include <mutex>
 #include <string>
-#include <complex>
 #include <zmq.hpp>
 
 #ifndef _NODEPROXY_INCLUDED_
 #define _NODEPROXY_INCLUDED_
 
-typedef std::vector<std::complex<float>> vector_c64;
-
-// threadsafe queue
-template<typename T>
-class atomic_queue{
-	public:
-		atomic_queue() : basic_queue{}{};
-		void push(const T& val){
-			std::lock_guard<std::mutex> lock(mutex);
-			basic_queue.push(val);
-		}
-		void pop(){
-			std::lock_guard<std::mutex> lock(mutex);
-			basic_queue.pop();
-		}
-		T& front(){
-			std::lock_guard<std::mutex> lock(mutex);
-			return basic_queue.front();
-		}
-		bool empty(){
-			std::lock_guard<std::mutex> lock(mutex);
-			return basic_queue.empty();
-		}
-		size_t size(){
-			std::lock_guard<std::mutex> lock(mutex);
-			return basic_queue.size();
-		}
-	private:
-		std::queue<T> basic_queue;
-		std::mutex mutex;
-};
-
+#include "common.h"
+#include "atomic_queue.h"
 
 
 class NodeProxy {

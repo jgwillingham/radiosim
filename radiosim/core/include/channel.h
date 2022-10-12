@@ -1,14 +1,14 @@
 #include <iostream>
-#include <vector>
 #include <thread>
 #include <atomic>
 #include <random>
-#include <algorithm>
 #include <zmq.hpp>
-#include "node_proxy.h"
 
 #ifndef _CHANNEL_INCLUDED_
 #define _CHANNEL_INCLUDED_
+
+#include "common.h"
+#include "node_proxy.h"
 
 
 class Channel {
@@ -32,17 +32,6 @@ class Channel {
 
 		vector_c64 generate_complex_awgn(size_t nsamples);
 };
-
-
-// overload + operator to sum complex vectors elementwise
-vector_c64 operator+(const vector_c64& vec1, const vector_c64& vec2){
-	assert(vec1.size() == vec2.size());
-	size_t dim = vec1.size();
-	vector_c64 vsum(dim);
-	std::transform(vec1.begin(), vec1.end(), vec2.begin(), vsum.begin(), std::plus<std::complex<float>>());
-	return vsum;
-}
-
 
 
 // for Python ctypes wrapper
