@@ -83,13 +83,11 @@ void NodeProxy::rxsend(){
 	vector_c64 data;
 	data.reserve(512);
 	while ( rx_is_active.load() ){
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
-		if (not rxbuffer.empty()){
-			data = rxbuffer.front();
-			rxbuffer.pop();
-			zmq::message_t msg = pack_complex64_to_message(data);
-			rxsocket.send( msg, zmq::send_flags::none );
-		}
+		// Get data in buffer. Wait/block if empty
+		rxbuffer.wait_pop( data );
+		// Pack data bytes into msg and send
+		zmq::message_t msg = pack_complex64_to_message(data);
+		rxsocket.send( msg, zmq::send_flags::none );
 	}
 }
 
