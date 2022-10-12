@@ -1,12 +1,12 @@
+
+#ifndef CHANNEL_INCLUDED
+#define CHANNEL_INCLUDED
+
 #include <iostream>
 #include <thread>
 #include <atomic>
 #include <random>
 #include <zmq.hpp>
-
-#ifndef _CHANNEL_INCLUDED_
-#define _CHANNEL_INCLUDED_
-
 #include "common.h"
 #include "node_proxy.h"
 

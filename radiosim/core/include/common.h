@@ -1,9 +1,11 @@
+
+#ifndef COMMON_INCLUDED
+#define COMMON_INCLUDED
+
 #include <vector>
 #include <complex>
 #include <algorithm>
 
-#ifndef _COMMON_INCLUDED_
-#define _COMMON_INCLUDED_
 
 typedef std::vector<std::complex<float>> vector_c64;
 

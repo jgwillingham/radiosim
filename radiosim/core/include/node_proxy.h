@@ -1,16 +1,13 @@
+
+#ifndef NODEPROXY_INCLUDED
+#define NODEPROXY_INCLUDED
+
 #include <iostream>
-#include <queue>
 #include <thread>
 #include <atomic>
-#include <mutex>
-#include <string>
 #include <zmq.hpp>
-
-#ifndef _NODEPROXY_INCLUDED_
-#define _NODEPROXY_INCLUDED_
-
 #include "common.h"
-#include "atomic_queue.h"
+#include "threadsafe_queue.h"
 
 
 class NodeProxy {
@@ -22,8 +19,8 @@ class NodeProxy {
 
 		unsigned int txport;
 		unsigned int rxport;
-		atomic_queue<vector_c64> txbuffer;
-		atomic_queue<vector_c64> rxbuffer;
+		threadsafe_queue<vector_c64> txbuffer;
+		threadsafe_queue<vector_c64> rxbuffer;
 	private:
 		void init_sockets(zmq::context_t& ctx, unsigned int txport, unsigned int rxport);
 		void init_buffers(int buffer_size);

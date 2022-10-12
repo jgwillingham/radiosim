@@ -1,14 +1,14 @@
+
+#ifndef THREADSAFEQUEUE_INCLUDED
+#define THREADSAFEQUEUE_INCLUDED
+
 #include <mutex>
 #include <queue>
 
-#ifndef _ATOMICQUEUE_INCLUDED_
-#define _ATOMICQUEUE_INCLUDED_
-
-// threadsafe queue
 template<typename T>
-class atomic_queue{
+class threadsafe_queue{
 	public:
-		atomic_queue() : basic_queue{}{};
+		threadsafe_queue() : basic_queue{}{};
 		void push(const T& val){
 			std::lock_guard<std::mutex> lock(mutex);
 			basic_queue.push(val);

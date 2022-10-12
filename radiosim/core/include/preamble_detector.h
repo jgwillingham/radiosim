@@ -1,12 +1,13 @@
-#include <thread>
-#include <atomic>
-#include <zmq.hpp>
-
-#include "common.h"
-#include "atomic_queue.h"
 
 #ifndef _PREAMBLEDETECTOR_INCLUDED_
 #define _PREAMBLEDETECTOR_INCLUDED_
+
+#include <thread>
+#include <atomic>
+#include <zmq.hpp>
+#include "common.h"
+#include "threadsafe_queue.h"
+
 
 class PreambleDetector{
 	public:
@@ -15,8 +16,8 @@ class PreambleDetector{
 
 		void start();
 
-		atomic_queue<vector_c64> inbuffer;
-		atomic_queue<vector_c64> outbuffer;
+		threadsafe_queue<vector_c64> inbuffer;
+		threadsafe_queue<vector_c64> outbuffer;
 
 	private:
 		unsigned int iport;
