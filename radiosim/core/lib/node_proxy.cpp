@@ -70,7 +70,7 @@ void NodeProxy::txlisten(){
 
 
 // Unpack message bytes to vector of complex64 data
-inline vector_c64 NodeProxy::unpack_to_complex64(zmq::message_t& msg){
+vector_c64 NodeProxy::unpack_to_complex64(zmq::message_t& msg){
 	size_t nbytes = msg.size();
 	vector_c64 complexdata( nbytes/2/sizeof(float) );
 	memcpy(complexdata.data(), msg.data(), nbytes);
@@ -94,7 +94,7 @@ void NodeProxy::rxsend(){
 
 
 // Write ZMQ message object from vector of complex64 data
-inline zmq::message_t NodeProxy::pack_complex64_to_message(vector_c64& complexdata){
+zmq::message_t NodeProxy::pack_complex64_to_message(vector_c64& complexdata){
 	size_t nbytes = 2*complexdata.size()*sizeof(float);
 	zmq::message_t msg(nbytes);
 	memcpy(msg.data(), complexdata.data(), nbytes);
