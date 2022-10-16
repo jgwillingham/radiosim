@@ -1,17 +1,13 @@
 #include <iostream>
-#include <string>
-#include <vector>
 #include <thread>
-#include <complex>
-#include <chrono>
 #include <zmq.hpp>
 #include <node_proxy.h>
 
 
 // Constructor
-NodeProxy::NodeProxy(zmq::context_t& ctx, unsigned int txport, unsigned int rxport, int buffer_size){
+NodeProxy::NodeProxy(zmq::context_t& ctx, unsigned int txport, unsigned int rxport, size_t buffer_size) : 
+		txbuffer{buffer_size} { 
 	init_sockets(ctx, txport, rxport);
-	init_buffers(buffer_size);
 }
 
 
@@ -41,13 +37,6 @@ void NodeProxy::init_sockets(zmq::context_t& ctx, unsigned int txport, unsigned 
 }
 
 
-// Initialize buffers
-void NodeProxy::init_buffers(int buffer_size){
-	//txbuffer.reserve(buffer_size);
-	//rxbuffer.reserve(buffer_size);
-}
-
-
 // Startup node proxy threads
 void NodeProxy::start(){
 	tx_is_active.store(true);
@@ -64,7 +53,7 @@ void NodeProxy::txlisten(){
 		zmq::message_t msg;
 		txsocket.recv( msg, zmq::recv_flags::none );
 		vector_c64 data = unpack_to_complex64(msg);
-		txbuffer.push( data );
+		txbuffer.put( data );
 	}
 }
 

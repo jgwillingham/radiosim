@@ -6,7 +6,7 @@
 int main(){
 	unsigned int txport = 11111;
 	unsigned int rxport = 22222;
-	int bufsize = 512;
+	int bufsize = 4096;
 
 	float noise_energy = 0.1;
 

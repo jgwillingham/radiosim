@@ -1,5 +1,4 @@
 #include <iostream>
-#include <vector>
 #include <thread>
 #include <chrono>
 #include <zmq.hpp>
@@ -25,7 +24,7 @@ Channel::~Channel(){
 
 
 // Add a new node to the channel network
-void Channel::add_node(unsigned int txport, unsigned int rxport, int buffer_size){
+void Channel::add_node(unsigned int txport, unsigned int rxport, size_t buffer_size){
 	NodeProxy* new_node = new NodeProxy(ctx, txport, rxport, buffer_size);
 	nodes.push_back( new_node );
 }
@@ -48,13 +47,10 @@ void Channel::run_main_loop(){
 	while ( channel_is_on.load() ){
 		std::this_thread::sleep_for( std::chrono::milliseconds(100) );
 		for (auto& node : nodes){
-			if (not node->txbuffer.empty()){
-				data = node->txbuffer.front();
-				node->txbuffer.pop();
-				vector_c64 noise = generate_complex_awgn(data.size());
-				data = data + noise;
-				node->rxbuffer.push( data );
-			}
+			data = node->txbuffer.get(256);
+			vector_c64 noise = generate_complex_awgn(data.size());
+			data = data + noise;
+			node->rxbuffer.push( data );
 		}
 	}
 }

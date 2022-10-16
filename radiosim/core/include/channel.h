@@ -16,7 +16,7 @@ class Channel {
 		Channel(float noise_energy);
 		~Channel();
 
-		void add_node(unsigned int txport, unsigned int rxport, int buffer_size);
+		void add_node(unsigned int txport, unsigned int rxport, size_t buffer_size);
 		void start();
 		
 	private:

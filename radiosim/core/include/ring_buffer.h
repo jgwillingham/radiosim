@@ -28,14 +28,21 @@ class ring_buffer{
 		void put(std::vector<T> new_items){
 			std::lock_guard<std::mutex> lock(mutex);
 			for (auto& item : new_items){
-				put(item);
+				container[write_idx] = item;
+				write_idx = (write_idx + 1) % maxsize;
+
+				if (isfull){ // buffer overflow. overwriting data
+					read_idx = (read_idx + 1) % maxsize;
+				}
+
+				isfull = read_idx==write_idx;
 			}
 		};
 
 		// get single item
 		T get(){
 			std::lock_guard<std::mutex> lock(mutex);
-			if (empty()){
+			if (empty(false)){
 				return T();
 			}
 			T value = container[read_idx];
@@ -50,7 +57,7 @@ class ring_buffer{
 
 			std::vector<T> output_items(nitems);
 			for (size_t i=0; i<nitems; i++){
-				if (empty()){
+				if (empty(false)){
 					output_items[i] = T();
 					continue;
 				}
@@ -62,8 +69,10 @@ class ring_buffer{
 		};
 
 		// is the buffer empty?
-		bool empty(){
-			std::lock_guard<std::mutex> lock(mutex);
+		bool empty(bool safe=true){
+			if (safe){
+				std::lock_guard<std::mutex> lock(mutex);
+			};
 			return (read_idx == write_idx) and not isfull;
 		};
 

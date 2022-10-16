@@ -8,22 +8,22 @@
 #include <zmq.hpp>
 #include "common.h"
 #include "threadsafe_queue.h"
+#include "ring_buffer.h"
 
 
 class NodeProxy {
 	public:
-		NodeProxy(zmq::context_t& ctx, unsigned int txport, unsigned int rxport, int buffer_size);
+		NodeProxy(zmq::context_t& ctx, unsigned int txport, unsigned int rxport, size_t buffer_size);
 		~NodeProxy();
 
 		void start();
 
 		unsigned int txport;
 		unsigned int rxport;
-		threadsafe_queue<vector_c64> txbuffer;
+		ring_buffer<c64> txbuffer;
 		threadsafe_queue<vector_c64> rxbuffer;
 	private:
 		void init_sockets(zmq::context_t& ctx, unsigned int txport, unsigned int rxport);
-		void init_buffers(int buffer_size);
 
 		void txlisten();
 		void rxsend();
