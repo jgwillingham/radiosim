@@ -24,7 +24,7 @@ class TxRxTesting(unittest.TestCase):
 
 		self.finished = False
 
-		data = np.random.rand(1000).astype(np.float64)
+		data = np.random.rand(100).astype(np.float64)
 		self.dlen = len(bytearray(data))
 		src = DataSource(data=data, oport=11111)
 
@@ -42,21 +42,20 @@ class TxRxTesting(unittest.TestCase):
 		src.join(0)
 		self.rx.stop()
 
-		self.assertTrue( np.all(rx_data == data) )
+		self.assertTrue( np.all(rx_data[:len(data)] == data) )
 
 
 	def watch_back_buffer(self):
 		rx_bytes = b''
-		nbytes = 0
-		while nbytes < self.dlen:
+		while len(rx_bytes) < self.dlen:
 			try:
 				rawdata = self.rx.buf_back.get( timeout=5 )
 			except queue.Empty:
 				return
-			nbytes += len(rawdata)
 			rx_bytes += rawdata
 		self.finished = True
-		num_float64s = nbytes // 8
+		rx_bytes = rx_bytes[:self.dlen]
+		num_float64s = len(rx_bytes) // 8
 		rx_data = struct.unpack("d"*num_float64s, rx_bytes)
 		return rx_data
 

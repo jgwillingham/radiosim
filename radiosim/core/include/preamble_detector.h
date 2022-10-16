@@ -18,7 +18,7 @@ class PreambleDetector{
 		void set_pramble();
 		void schmidl_cox_correlate(vector_c64& correlations, );
 
-		threadsafe_queue<vector_c64> inbuffer;
+		ring_buffer<c64> inbuffer;
 		threadsafe_queue<vector_c64> outbuffer;
 
 	private:

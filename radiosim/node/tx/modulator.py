@@ -39,8 +39,11 @@ class Modulator(threading.Thread):
 				continue
 			# map to complex symbols
 			symbols = self.modem.map(data)
-			# pulse shape
-			bb_signal = self.modem.apply_pulse_filter(symbols, self.modem.pulse_shape_filter)
+			if self.modem.ofdm_active:
+				bb_signal = self.modem.ofdm.ofdm_modulate(symbols)
+			else:
+				# pulse shape
+				bb_signal = self.modem.apply_pulse_filter(symbols, self.modem.pulse_shape_filter)
 			# upconvert
 			pb_signal = self.modem.upconvert(bb_signal)
 			# put in output buffer

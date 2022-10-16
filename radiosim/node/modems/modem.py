@@ -3,6 +3,7 @@ import numpy as np
 from .constellations import Constellation
 from .utils.pulse_shaping import rrc_filter, SUPPORTED_PULSE_SHAPES, DEFAULT_SPS
 from .utils.nco import NCO
+from .utils.ofdm import OFDM
 
 class Modem(ABC):
 	"""
@@ -14,6 +15,15 @@ class Modem(ABC):
 	def constellation(self) -> Constellation:
 		"""
 		Symbol constellation
+		"""
+		pass
+
+
+	@property
+	@abstractmethod
+	def ofdm_active(self) -> bool:
+		"""
+		True if OFDM is used, otherwise false
 		"""
 		pass
 

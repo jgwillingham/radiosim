@@ -39,12 +39,15 @@ class Demodulator(threading.Thread):
 				continue
 			# downconvert to baseband
 			bbdata = self.modem.downconvert(pbdata)
-			# clean signal with matched filter
-			bbdata_clean = self.modem.apply_matched_filter(bbdata, self.modem.matched_filter)
-			# phase synchronization?
-			phase_offset = 2
-			# get symbol measurements and estimate true symbols
-			symbolmeas = bbdata_clean[phase_offset::self.modem.samples_per_symbol]
+			if self.modem.ofdm_active:
+				symbolmeas = self.modem.ofdm.ofdm_demodulate(bbdata)
+			else:
+				# clean signal with matched filter
+				bbdata_clean = self.modem.apply_matched_filter(bbdata, self.modem.matched_filter)
+				# phase synchronization?
+				phase_offset = 2
+				# get symbol measurements and estimate true symbols
+				symbolmeas = bbdata_clean[phase_offset::self.modem.samples_per_symbol]
 			symbols = self.modem.get_euclidean_estimates(symbolmeas)
 			# demap symbols to bytes
 			databytes = self.modem.demap(symbols)
