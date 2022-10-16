@@ -1,6 +1,6 @@
 
-#ifndef _PREAMBLEDETECTOR_INCLUDED_
-#define _PREAMBLEDETECTOR_INCLUDED_
+#ifndef PREAMBLEDETECTOR_INCLUDED
+#define PREAMBLEDETECTOR_INCLUDED
 
 #include <thread>
 #include <atomic>
@@ -14,7 +14,9 @@ class PreambleDetector{
 		PreambleDetector(unsigned int iport, int corrlen);
 		~PreambleDetector();
 
-		void start();
+		void start
+		void set_pramble();
+		void schmidl_cox_correlate(vector_c64& correlations, );
 
 		threadsafe_queue<vector_c64> inbuffer;
 		threadsafe_queue<vector_c64> outbuffer;

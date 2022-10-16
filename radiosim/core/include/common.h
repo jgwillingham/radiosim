@@ -5,6 +5,7 @@
 #include <vector>
 #include <complex>
 #include <algorithm>
+#include <cassert>
 
 
 typedef std::vector<std::complex<float>> vector_c64;
