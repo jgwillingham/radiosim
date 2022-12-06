@@ -14,16 +14,18 @@ class PreambleDetector{
 		PreambleDetector(unsigned int iport, int corrlen);
 		~PreambleDetector();
 
-		void start
-		void set_pramble();
-		void schmidl_cox_correlate(vector_c64& correlations, );
+		void start();
+		void set_preamble();
+		//void schmidl_cox_correlate(vector_c64& correlations, );
 
-		ring_buffer<c64> inbuffer;
+		threadsafe_queue<vector_c64> inbuffer;
 		threadsafe_queue<vector_c64> outbuffer;
 
 	private:
 		unsigned int iport;
 		int corrlen;
+
+		void init_socket(unsigned int portnum);
 
 		zmq::socket_t insocket;
 		std::thread listen_thread;

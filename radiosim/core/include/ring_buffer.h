@@ -76,6 +76,17 @@ class ring_buffer{
 			return (read_idx == write_idx) and not isfull;
 		};
 
+		// return number of elements in buffer
+		size_t size(){
+			std::lock_guard<std::mutex> lock(mutex);
+			if (isfull){
+				return maxsize;
+			}
+			else{
+				return write_idx - read_idx;
+			}
+		};
+
 
 	private:
 		size_t maxsize;

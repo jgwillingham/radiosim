@@ -12,7 +12,7 @@ PreambleDetector::~PreambleDetector(){
 }
 
 
-void PreambleDetector::start(){
-	
-
+void PreambleDetector::init_socket(unsigned int portnum){
 }
+
+void PreambleDetector::start(){}

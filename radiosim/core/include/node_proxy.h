@@ -13,14 +13,22 @@
 
 class NodeProxy {
 	public:
+		//constructor
 		NodeProxy(zmq::context_t& ctx, unsigned int txport, unsigned int rxport, size_t buffer_size);
+		//destructor
 		~NodeProxy();
+		//copy constructor
+		NodeProxy(const NodeProxy&) = default;
+		//assignment (member-wise) constructor
+		NodeProxy& operator=(const NodeProxy&) = default;
+		//move constructor
+		NodeProxy(NodeProxy&&) = default;
 
 		void start();
 
 		unsigned int txport;
 		unsigned int rxport;
-		ring_buffer<c64> txbuffer;
+		threadsafe_queue<vector_c64> txbuffer;
 		threadsafe_queue<vector_c64> rxbuffer;
 	private:
 		void init_sockets(zmq::context_t& ctx, unsigned int txport, unsigned int rxport);

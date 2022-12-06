@@ -47,7 +47,7 @@ void Channel::run_main_loop(){
 	while ( channel_is_on.load() ){
 		std::this_thread::sleep_for( std::chrono::milliseconds(100) );
 		for (auto& node : nodes){
-			data = node->txbuffer.get(256);
+			node->txbuffer.wait_pop(data);
 			vector_c64 noise = generate_complex_awgn(data.size());
 			data = data + noise;
 			node->rxbuffer.push( data );

@@ -7,5 +7,10 @@ add_library(channel SHARED channel.cpp)
 set_property(TARGET channel PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_include_directories(channel PUBLIC ../include)
 
-target_link_libraries(channel PRIVATE nodeproxy cppzmq)
+add_library(preamble_detector SHARED preamble_detector.cpp)
+set_property(TARGET preamble_detector PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_include_directories(preamble_detector PUBLIC ../include)
 
+
+target_link_libraries(channel PRIVATE nodeproxy cppzmq)
+target_link_libraries(preamble_detector PRIVATE cppzmq)

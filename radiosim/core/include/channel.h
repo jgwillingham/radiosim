@@ -36,11 +36,17 @@ class Channel {
 
 // for Python ctypes wrapper
 extern "C"{
-	Channel* channel_new(float noise_energy){return new Channel(noise_energy);}
+	Channel* channel_new(float noise_energy){
+		return new Channel(noise_energy);
+	}
+
 	void channel_add_node(Channel* channel, unsigned int txport, unsigned int rxport, int buffer_size){
 		channel->add_node(txport, rxport, buffer_size);
 	}
-	void channel_start(Channel* channel){channel->start();}
+
+	void channel_start(Channel* channel){
+		channel->start();
+	}
 }
 
 #endif
